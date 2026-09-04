@@ -14,6 +14,7 @@ import { useRolePermission } from "@/hooks/use-role-permission"
 import { PERMISSIONS } from "@/lib/permissions"
 import { WebsiteConfigPanel } from "./website-config-panel"
 import { ApiKeyPanel } from "./api-key-panel"
+import { ChangePasswordPanel } from "./change-password-panel"
 
 interface ProfileCardProps {
   user: User
@@ -149,6 +150,11 @@ export function ProfileCard({ user }: ProfileCardProps) {
       {canManageConfig && <EmailServiceConfig />}
       {canPromote && <PromotePanel />}
       {canManageWebhook && <ApiKeyPanel />}
+
+      {/* 仅密码账号（没有绑定 OAuth provider）显示修改密码 */}
+      {user.providers && user.providers.length === 0 && (
+        <ChangePasswordPanel />
+      )}
 
       <div className="flex flex-col sm:flex-row gap-4 px-1">
         <Button

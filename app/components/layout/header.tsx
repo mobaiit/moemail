@@ -52,7 +52,7 @@ export function Header() {
             <DialogTitle>访问提示</DialogTitle>
           </DialogHeader>
           <DialogDescription className="text-sm leading-relaxed pt-1">
-            你没有权限使用该网站，如有需要，请联系网站管理员
+            如有需要更多功能，请联系网站管理员
           </DialogDescription>
           <p className="text-sm text-muted-foreground">
             管理员联系方式：

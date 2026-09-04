@@ -49,6 +49,7 @@ export function WebsiteConfigPanel() {
         emailDomains: string,
         adminContact: string,
         maxEmails: string,
+        siteStyle: string,
         turnstile?: {
           enabled: boolean,
           siteKey: string,
