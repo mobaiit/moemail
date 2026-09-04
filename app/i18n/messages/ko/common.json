@@ -15,5 +15,12 @@
     "logout": "로그아웃",
     "backToMailbox": "메일함으로 돌아가기"
   },
-  "github": "소스 코드 받기"
+  "github": "소스 코드 받기",
+  "contact": {
+    "button": "관리자 문의",
+    "title": "기능 요청",
+    "description": "더 많은 기능이 필요하시면 사이트 관리자에게 문의하세요.",
+    "adminContact": "관리자 연락처：",
+    "copied": "복사됨！"
+  }
 }

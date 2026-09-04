@@ -13,12 +13,14 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 
 const ADMIN_EMAIL = "luri@luri.cc.cd"
 
 export function Header() {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const t = useTranslations("common.contact")
 
   const handleCopyEmail = async () => {
     await navigator.clipboard.writeText(ADMIN_EMAIL)
@@ -37,7 +39,7 @@ export function Header() {
               className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <Mail className="h-4 w-4" />
-              <span className="hidden sm:inline">联系站长</span>
+              <span className="hidden sm:inline">{t("button")}</span>
             </button>
             <LanguageSwitcher />
             <ThemeToggle />
@@ -49,22 +51,22 @@ export function Header() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>访问提示</DialogTitle>
+            <DialogTitle>{t("title")}</DialogTitle>
           </DialogHeader>
           <DialogDescription className="text-sm leading-relaxed pt-1">
-            如有需要更多功能，请联系网站管理员
+            {t("description")}
           </DialogDescription>
           <p className="text-sm text-muted-foreground">
-            管理员联系方式：
+            {t("adminContact")}
             <button
               onClick={handleCopyEmail}
-              title="点击复制"
+              title={t("copied")}
               className="inline-flex items-center gap-1 font-medium text-foreground underline underline-offset-4 hover:opacity-70 transition-opacity cursor-pointer"
             >
               {copied ? (
                 <>
                   <Check className="h-3.5 w-3.5 text-green-500" />
-                  <span className="text-green-500">已复制！</span>
+                  <span className="text-green-500">{t("copied")}</span>
                 </>
               ) : (
                 ADMIN_EMAIL

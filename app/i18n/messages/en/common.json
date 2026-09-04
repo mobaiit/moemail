@@ -15,5 +15,12 @@
     "logout": "Logout",
     "backToMailbox": "Back to Mailbox"
   },
-  "github": "Get Source Code"
+  "github": "Get Source Code",
+  "contact": {
+    "button": "Contact Admin",
+    "title": "Feature Request",
+    "description": "If you need more features, please contact the site administrator.",
+    "adminContact": "Admin contact: ",
+    "copied": "Copied!"
+  }
 }

@@ -15,5 +15,12 @@
     "logout": "退出登录",
     "backToMailbox": "返回邮箱"
   },
-  "github": "获取网站源代码"
+  "github": "获取网站源代码",
+  "contact": {
+    "button": "联系站长",
+    "title": "功能需求",
+    "description": "如有需要更多功能，请联系网站管理员",
+    "adminContact": "管理员联系方式：",
+    "copied": "已复制！"
+  }
 }

@@ -15,6 +15,13 @@
     "logout": "ログアウト",
     "backToMailbox": "メールボックスに戻る"
   },
-  "github": "ソースコードを入手"
+  "github": "ソースコードを入手",
+  "contact": {
+    "button": "管理者に連絡",
+    "title": "機能リクエスト",
+    "description": "より多くの機能が必要な場合は、サイト管理者にお問い合わせください。",
+    "adminContact": "管理者の連絡先：",
+    "copied": "コピーしました！"
+  }
 }
 
