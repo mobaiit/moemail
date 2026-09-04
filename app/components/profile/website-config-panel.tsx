@@ -18,6 +18,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { EMAIL_CONFIG } from "@/config"
+import { STYLES, STYLE_LABELS, type SiteStyle } from "@/lib/style"
+import { cn } from "@/lib/utils"
 
 export function WebsiteConfigPanel() {
   const t = useTranslations("profile.website")
@@ -26,6 +28,7 @@ export function WebsiteConfigPanel() {
   const [emailDomains, setEmailDomains] = useState<string>("")
   const [adminContact, setAdminContact] = useState<string>("")
   const [maxEmails, setMaxEmails] = useState<string>(EMAIL_CONFIG.MAX_ACTIVE_EMAILS.toString())
+  const [siteStyle, setSiteStyle] = useState<SiteStyle>("default")
   const [turnstileEnabled, setTurnstileEnabled] = useState(false)
   const [turnstileSiteKey, setTurnstileSiteKey] = useState("")
   const [turnstileSecretKey, setTurnstileSecretKey] = useState("")
@@ -56,6 +59,7 @@ export function WebsiteConfigPanel() {
       setEmailDomains(data.emailDomains)
       setAdminContact(data.adminContact)
       setMaxEmails(data.maxEmails || EMAIL_CONFIG.MAX_ACTIVE_EMAILS.toString())
+      setSiteStyle((data.siteStyle as SiteStyle) || "default")
       setTurnstileEnabled(Boolean(data.turnstile?.enabled))
       setTurnstileSiteKey(data.turnstile?.siteKey ?? "")
       setTurnstileSecretKey(data.turnstile?.secretKey ?? "")
@@ -73,6 +77,7 @@ export function WebsiteConfigPanel() {
           emailDomains,
           adminContact,
           maxEmails: maxEmails || EMAIL_CONFIG.MAX_ACTIVE_EMAILS.toString(),
+          siteStyle,
           turnstile: {
             enabled: turnstileEnabled,
             siteKey: turnstileSiteKey,
@@ -153,6 +158,35 @@ export function WebsiteConfigPanel() {
               onChange={(e) => setMaxEmails(e.target.value)}
               placeholder={`${EMAIL_CONFIG.MAX_ACTIVE_EMAILS}`}
             />
+          </div>
+        </div>
+
+        <div className="space-y-4 rounded-lg border border-dashed border-primary/40 p-4">
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">网站风格</Label>
+            <p className="text-xs text-muted-foreground">选择网站的视觉风格，对所有访客生效</p>
+            <div className="grid grid-cols-3 gap-2 pt-1">
+              {STYLES.map((s) => {
+                const info = STYLE_LABELS[s]
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setSiteStyle(s)}
+                    className={cn(
+                      "flex flex-col items-center gap-1.5 rounded-lg border-2 p-3 transition-all hover:bg-accent text-center",
+                      siteStyle === s
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border text-muted-foreground"
+                    )}
+                  >
+                    <span className="text-xl leading-none">{info.icon}</span>
+                    <span className="text-xs font-medium">{info.label}</span>
+                    <span className="text-xs opacity-60">{info.desc}</span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </div>
 

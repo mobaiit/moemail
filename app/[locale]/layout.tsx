@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils"
 import { zpix } from "../fonts"
 import "../globals.css"
 import { Providers } from "../providers"
+import { getRequestContext } from "@cloudflare/next-on-pages"
+import type { SiteStyle } from "@/lib/style"
 
 export const runtime = "edge"
 
@@ -107,8 +109,20 @@ export default async function LocaleLayout({
 
   const messages = await getMessages(locale)
 
+  // 从 KV 读取管理员设置的网站风格
+  let siteStyle: SiteStyle = "default"
+  try {
+    const env = getRequestContext().env
+    const stored = await env.SITE_CONFIG.get("SITE_STYLE")
+    if (stored && ["default", "pixel", "cyber"].includes(stored)) {
+      siteStyle = stored as SiteStyle
+    }
+  } catch {
+    // 读取失败时使用默认风格
+  }
+
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning data-style={siteStyle === "default" ? undefined : siteStyle}>
       <head>
         <meta name="application-name" content="MoeMail" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

@@ -16,7 +16,8 @@ export async function GET() {
     maxEmails,
     turnstileEnabled,
     turnstileSiteKey,
-    turnstileSecretKey
+    turnstileSecretKey,
+    siteStyle,
   ] = await Promise.all([
     env.SITE_CONFIG.get("DEFAULT_ROLE"),
     env.SITE_CONFIG.get("EMAIL_DOMAINS"),
@@ -24,7 +25,8 @@ export async function GET() {
     env.SITE_CONFIG.get("MAX_EMAILS"),
     env.SITE_CONFIG.get("TURNSTILE_ENABLED"),
     env.SITE_CONFIG.get("TURNSTILE_SITE_KEY"),
-    env.SITE_CONFIG.get("TURNSTILE_SECRET_KEY")
+    env.SITE_CONFIG.get("TURNSTILE_SECRET_KEY"),
+    env.SITE_CONFIG.get("SITE_STYLE"),
   ])
 
   return Response.json({
@@ -32,6 +34,7 @@ export async function GET() {
     emailDomains: emailDomains || "moemail.app",
     adminContact: adminContact || "",
     maxEmails: maxEmails || EMAIL_CONFIG.MAX_ACTIVE_EMAILS.toString(),
+    siteStyle: siteStyle || "default",
     turnstile: canManageConfig ? {
       enabled: turnstileEnabled === "true",
       siteKey: turnstileSiteKey || "",
@@ -54,12 +57,14 @@ export async function POST(request: Request) {
     emailDomains,
     adminContact,
     maxEmails,
+    siteStyle,
     turnstile
   } = await request.json() as { 
     defaultRole: Exclude<Role, typeof ROLES.EMPEROR>,
     emailDomains: string,
     adminContact: string,
     maxEmails: string,
+    siteStyle: string,
     turnstile?: {
       enabled: boolean,
       siteKey: string,
@@ -87,6 +92,7 @@ export async function POST(request: Request) {
     env.SITE_CONFIG.put("EMAIL_DOMAINS", emailDomains),
     env.SITE_CONFIG.put("ADMIN_CONTACT", adminContact),
     env.SITE_CONFIG.put("MAX_EMAILS", maxEmails),
+    env.SITE_CONFIG.put("SITE_STYLE", siteStyle || "default"),
     env.SITE_CONFIG.put("TURNSTILE_ENABLED", turnstileConfig.enabled.toString()),
     env.SITE_CONFIG.put("TURNSTILE_SITE_KEY", turnstileConfig.siteKey),
     env.SITE_CONFIG.put("TURNSTILE_SECRET_KEY", turnstileConfig.secretKey)

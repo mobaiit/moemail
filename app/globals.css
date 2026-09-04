@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   默认风格（Default）- 圆角卡片，紫色主色
+   ============================================================ */
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -95,4 +98,178 @@
   .dark * {
     scrollbar-color: hsl(var(--primary) / 0.3) transparent;
   }
+}
+
+/* ============================================================
+   像素风格（Pixel）- 方块字体，直角，像素边框
+   ============================================================ */
+[data-style="pixel"] {
+  --background: 0 0% 97%;
+  --foreground: 0 0% 5%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 5%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 5%;
+  --primary: 270 60% 45%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 0 0% 90%;
+  --secondary-foreground: 0 0% 10%;
+  --muted: 0 0% 92%;
+  --muted-foreground: 0 0% 40%;
+  --accent: 270 40% 88%;
+  --accent-foreground: 270 60% 30%;
+  --destructive: 0 80% 50%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 20%;
+  --input: 0 0% 20%;
+  --ring: 270 60% 45%;
+  --radius: 0rem;
+  font-family: 'zpix', monospace, sans-serif;
+}
+
+[data-style="pixel"].dark {
+  --background: 0 0% 8%;
+  --foreground: 0 0% 95%;
+  --card: 0 0% 10%;
+  --card-foreground: 0 0% 95%;
+  --popover: 0 0% 10%;
+  --popover-foreground: 0 0% 95%;
+  --primary: 270 60% 65%;
+  --primary-foreground: 0 0% 5%;
+  --secondary: 0 0% 16%;
+  --secondary-foreground: 0 0% 95%;
+  --muted: 0 0% 16%;
+  --muted-foreground: 0 0% 60%;
+  --accent: 270 40% 25%;
+  --accent-foreground: 270 60% 80%;
+  --destructive: 0 70% 40%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 30%;
+  --input: 0 0% 30%;
+  --ring: 270 60% 65%;
+}
+
+/* 像素风格：直角边框，像素投影 */
+[data-style="pixel"] *,
+[data-style="pixel"] *::before,
+[data-style="pixel"] *::after {
+  border-radius: 0 !important;
+  image-rendering: pixelated;
+}
+
+[data-style="pixel"] .border,
+[data-style="pixel"] [class*="border-"] {
+  border-width: 2px;
+}
+
+[data-style="pixel"] button:not([class*="ghost"]):not([class*="link"]) {
+  box-shadow: 3px 3px 0 hsl(var(--foreground) / 0.5);
+  transition: box-shadow 0.1s, transform 0.1s;
+}
+
+[data-style="pixel"] button:not([class*="ghost"]):not([class*="link"]):active {
+  box-shadow: 1px 1px 0 hsl(var(--foreground) / 0.5);
+  transform: translate(2px, 2px);
+}
+
+[data-style="pixel"] [class*="card"],
+[data-style="pixel"] [class*="Card"] {
+  box-shadow: 4px 4px 0 hsl(var(--foreground) / 0.15);
+  border: 2px solid hsl(var(--border));
+}
+
+/* ============================================================
+   赛博朋克风格（Cyber）- 霓虹青/绿，斜切角，扫描线
+   ============================================================ */
+[data-style="cyber"] {
+  --background: 220 20% 6%;
+  --foreground: 160 100% 75%;
+  --card: 220 20% 9%;
+  --card-foreground: 160 100% 75%;
+  --popover: 220 20% 9%;
+  --popover-foreground: 160 100% 75%;
+  --primary: 160 100% 50%;
+  --primary-foreground: 220 20% 6%;
+  --secondary: 220 20% 14%;
+  --secondary-foreground: 160 100% 70%;
+  --muted: 220 20% 14%;
+  --muted-foreground: 160 40% 50%;
+  --accent: 300 100% 50%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 100% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 160 80% 30%;
+  --input: 160 80% 30%;
+  --ring: 160 100% 50%;
+  --radius: 0rem;
+}
+
+/* 赛博朋克强制深色 */
+[data-style="cyber"],
+[data-style="cyber"].light {
+  color-scheme: dark;
+  --background: 220 20% 6%;
+  --foreground: 160 100% 75%;
+}
+
+/* 扫描线效果 */
+[data-style="cyber"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    hsl(160 100% 50% / 0.03) 2px,
+    hsl(160 100% 50% / 0.03) 4px
+  );
+}
+
+/* 霓虹边框 */
+[data-style="cyber"] [class*="card"],
+[data-style="cyber"] [class*="Card"] {
+  border: 1px solid hsl(160 80% 30%);
+  box-shadow:
+    0 0 8px hsl(160 100% 50% / 0.2),
+    inset 0 0 8px hsl(160 100% 50% / 0.05);
+}
+
+/* 斜切角 */
+[data-style="cyber"] button:not([class*="ghost"]):not([class*="link"]):not([class*="icon"]) {
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  border-radius: 0 !important;
+}
+
+/* 霓虹文字发光 */
+[data-style="cyber"] h1,
+[data-style="cyber"] h2,
+[data-style="cyber"] h3 {
+  text-shadow: 0 0 10px hsl(160 100% 50% / 0.7);
+}
+
+/* 霓虹输入框 */
+[data-style="cyber"] input,
+[data-style="cyber"] textarea {
+  border-color: hsl(160 80% 30%) !important;
+  box-shadow: 0 0 6px hsl(160 100% 50% / 0.2) !important;
+  border-radius: 0 !important;
+  background: hsl(220 20% 8%) !important;
+}
+
+[data-style="cyber"] input:focus,
+[data-style="cyber"] textarea:focus {
+  box-shadow: 0 0 12px hsl(160 100% 50% / 0.5) !important;
+  outline: none;
+}
+
+/* Cyber 滚动条 */
+[data-style="cyber"] ::-webkit-scrollbar-thumb {
+  background: hsl(160 100% 40% / 0.5) !important;
+}
+
+[data-style="cyber"] * {
+  border-radius: 0 !important;
 }
