@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
+import { signOut } from "next-auth/react"
+import { useLocale } from "next-intl"
 
 export function ChangePasswordPanel() {
   const [currentPassword, setCurrentPassword] = useState("")
@@ -16,6 +18,7 @@ export function ChangePasswordPanel() {
   const [showConfirm, setShowConfirm] = useState(false)
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
+  const locale = useLocale()
 
   const handleSubmit = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
@@ -42,10 +45,12 @@ export function ChangePasswordPanel() {
 
       if (!res.ok) throw new Error(data.error || "修改失败")
 
-      toast({ title: "密码修改成功" })
-      setCurrentPassword("")
-      setNewPassword("")
-      setConfirmPassword("")
+      toast({ title: "密码修改成功，即将退出登录..." })
+
+      // 修改密码后自动退出，强制重新登录
+      setTimeout(() => {
+        signOut({ callbackUrl: `/${locale}` })
+      }, 1500)
     } catch (error) {
       toast({
         title: "修改失败",

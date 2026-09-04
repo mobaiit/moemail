@@ -20,6 +20,7 @@ import {
 import { EMAIL_CONFIG } from "@/config"
 import { STYLES, STYLE_LABELS, type SiteStyle } from "@/lib/style"
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
 export function WebsiteConfigPanel() {
   const t = useTranslations("profile.website")
@@ -35,6 +36,7 @@ export function WebsiteConfigPanel() {
   const [showSecretKey, setShowSecretKey] = useState(false)
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
+  const router = useRouter()
 
 
   useEffect(() => {
@@ -93,6 +95,10 @@ export function WebsiteConfigPanel() {
         title: t("saveSuccess"),
         description: t("saveSuccess"),
       })
+
+      // 风格切换需要服务端重新注入，整页刷新生效
+      router.refresh()
+      window.location.reload()
     } catch (error) {
       toast({
         title: t("saveFailed"),

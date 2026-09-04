@@ -114,7 +114,7 @@ export default async function LocaleLayout({
   try {
     const env = getRequestContext().env
     const stored = await env.SITE_CONFIG.get("SITE_STYLE")
-    if (stored && ["default", "pixel", "cyber"].includes(stored)) {
+    if (stored && ["default", "pixel"].includes(stored)) {
       siteStyle = stored as SiteStyle
     }
   } catch {
@@ -134,7 +134,9 @@ export default async function LocaleLayout({
       <body 
         className={cn(
           zpix.variable,
-          "font-zpix min-h-screen antialiased",
+          // 默认风格用系统圆润字体，pixel 风格通过 CSS [data-style="pixel"] body 切换为 zpix
+          siteStyle === "pixel" ? "font-zpix" : "font-sans",
+          "min-h-screen antialiased",
           "bg-background text-foreground",
           "transition-colors duration-300"
         )}
