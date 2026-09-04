@@ -4,7 +4,7 @@ import { SignButton } from "@/components/auth/sign-button"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
 import { LanguageSwitcher } from "@/components/layout/language-switcher"
 import { Logo } from "@/components/ui/logo"
-import { Mail, Copy, Check } from "lucide-react"
+import { Mail, Check } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -20,7 +20,7 @@ export function Header() {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  const handleCopy = async () => {
+  const handleCopyEmail = async () => {
     await navigator.clipboard.writeText(ADMIN_EMAIL)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -54,25 +54,23 @@ export function Header() {
           <DialogDescription className="text-sm leading-relaxed pt-1">
             你没有权限使用该网站，如有需要，请联系网站管理员
           </DialogDescription>
-          <div className="flex items-center justify-between rounded-md border px-3 py-2 mt-1">
-            <span className="text-sm text-foreground">管理员联系方式：{ADMIN_EMAIL}</span>
+          <p className="text-sm text-muted-foreground">
+            管理员联系方式：
             <button
-              onClick={handleCopy}
-              className="ml-3 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
+              onClick={handleCopyEmail}
+              title="点击复制"
+              className="inline-flex items-center gap-1 font-medium text-foreground underline underline-offset-4 hover:opacity-70 transition-opacity cursor-pointer"
             >
               {copied ? (
                 <>
                   <Check className="h-3.5 w-3.5 text-green-500" />
-                  <span className="text-green-500">已复制</span>
+                  <span className="text-green-500">已复制！</span>
                 </>
               ) : (
-                <>
-                  <Copy className="h-3.5 w-3.5" />
-                  <span>复制</span>
-                </>
+                ADMIN_EMAIL
               )}
             </button>
-          </div>
+          </p>
         </DialogContent>
       </Dialog>
     </header>
