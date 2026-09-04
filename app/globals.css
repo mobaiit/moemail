@@ -101,82 +101,53 @@
 }
 
 /* ============================================================
-   像素风格（Pixel）- zpix 字体，直角，像素边框
+   像素风格（Pixel）- zpix 字体 + 复古暖色调
    ============================================================ */
 [data-style="pixel"] {
-  --background: 0 0% 97%;
-  --foreground: 0 0% 5%;
-  --card: 0 0% 100%;
-  --card-foreground: 0 0% 5%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 5%;
-  --primary: 270 60% 45%;
+  --background: 40 30% 96%;       /* 米白/旧纸 */
+  --foreground: 25 40% 15%;       /* 深棕 */
+  --card: 40 30% 98%;
+  --card-foreground: 25 40% 15%;
+  --popover: 40 30% 98%;
+  --popover-foreground: 25 40% 15%;
+  --primary: 20 80% 48%;          /* 橙红 */
   --primary-foreground: 0 0% 98%;
-  --secondary: 0 0% 90%;
-  --secondary-foreground: 0 0% 10%;
-  --muted: 0 0% 92%;
-  --muted-foreground: 0 0% 40%;
-  --accent: 270 40% 88%;
-  --accent-foreground: 270 60% 30%;
-  --destructive: 0 80% 50%;
+  --secondary: 40 20% 90%;
+  --secondary-foreground: 25 40% 20%;
+  --muted: 40 20% 90%;
+  --muted-foreground: 25 25% 45%;
+  --accent: 40 20% 88%;
+  --accent-foreground: 20 80% 40%;
+  --destructive: 0 75% 50%;
   --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 20%;
-  --input: 0 0% 20%;
-  --ring: 270 60% 45%;
-  --radius: 0rem;
+  --border: 30 25% 75%;
+  --input: 30 25% 75%;
+  --ring: 20 80% 48%;
 }
 
 [data-style="pixel"].dark {
-  --background: 0 0% 8%;
-  --foreground: 0 0% 95%;
-  --card: 0 0% 10%;
-  --card-foreground: 0 0% 95%;
-  --popover: 0 0% 10%;
-  --popover-foreground: 0 0% 95%;
-  --primary: 270 60% 65%;
-  --primary-foreground: 0 0% 5%;
-  --secondary: 0 0% 16%;
-  --secondary-foreground: 0 0% 95%;
-  --muted: 0 0% 16%;
-  --muted-foreground: 0 0% 60%;
-  --accent: 270 40% 25%;
-  --accent-foreground: 270 60% 80%;
-  --destructive: 0 70% 40%;
+  --background: 25 20% 10%;       /* 深棕黑 */
+  --foreground: 40 30% 88%;       /* 米白 */
+  --card: 25 20% 13%;
+  --card-foreground: 40 30% 88%;
+  --popover: 25 20% 13%;
+  --popover-foreground: 40 30% 88%;
+  --primary: 20 80% 58%;          /* 亮橙红 */
+  --primary-foreground: 25 20% 8%;
+  --secondary: 25 20% 18%;
+  --secondary-foreground: 40 30% 85%;
+  --muted: 25 20% 18%;
+  --muted-foreground: 40 20% 55%;
+  --accent: 25 20% 20%;
+  --accent-foreground: 20 80% 60%;
+  --destructive: 0 65% 45%;
   --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 30%;
-  --input: 0 0% 30%;
-  --ring: 270 60% 65%;
+  --border: 25 20% 25%;
+  --input: 25 20% 25%;
+  --ring: 20 80% 58%;
 }
 
-/* 像素风格：zpix 字体 + 直角 + 像素投影 */
+/* 仅切换为 zpix 像素字体，其他样式与默认一致 */
 [data-style="pixel"] body {
   font-family: var(--font-zpix), monospace, sans-serif !important;
-}
-
-[data-style="pixel"] *,
-[data-style="pixel"] *::before,
-[data-style="pixel"] *::after {
-  border-radius: 0 !important;
-  image-rendering: pixelated;
-}
-
-[data-style="pixel"] .border,
-[data-style="pixel"] [class*="border-"] {
-  border-width: 2px;
-}
-
-[data-style="pixel"] button:not([class*="ghost"]):not([class*="link"]) {
-  box-shadow: 3px 3px 0 hsl(var(--foreground) / 0.5);
-  transition: box-shadow 0.1s, transform 0.1s;
-}
-
-[data-style="pixel"] button:not([class*="ghost"]):not([class*="link"]):active {
-  box-shadow: 1px 1px 0 hsl(var(--foreground) / 0.5);
-  transform: translate(2px, 2px);
-}
-
-[data-style="pixel"] [class*="card"],
-[data-style="pixel"] [class*="Card"] {
-  box-shadow: 4px 4px 0 hsl(var(--foreground) / 0.15);
-  border: 2px solid hsl(var(--border));
 }
