@@ -22,6 +22,26 @@
   "actions": {
     "enterMailbox": "Enter Mailbox",
     "getStarted": "Get Started"
+  },
+  "benefits": {
+    "sectionTitle": "Role Benefits Comparison",
+    "sectionDesc": "Choose the plan that suits you, contact admin to upgrade",
+    "tableHeader": "Benefit",
+    "rows": {
+      "emailCount": "Email Count",
+      "permanentEmail": "Permanent Email",
+      "dailySend": "Daily Send",
+      "webhook": "Webhook",
+      "apiKey": "API Key",
+      "deleteCooldown": "Delete Cooldown"
+    },
+    "unlimited": "Unlimited",
+    "countUnit": "{n} emails",
+    "sendUnit": "{n} emails/day",
+    "currentBadge": "Current",
+    "upgradeKnight": "Upgrade to Knight →",
+    "upgradeDuke": "Upgrade to Duke →",
+    "viewBenefits": "View My Benefits"
   }
 }
 

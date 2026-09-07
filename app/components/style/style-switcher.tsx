@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Palette } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -10,12 +11,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { useStyle } from "@/components/style/style-provider"
-import { STYLES, STYLE_LABELS, type SiteStyle } from "@/lib/style"
+import { STYLES, STYLE_ICONS, type SiteStyle } from "@/lib/style"
 import { cn } from "@/lib/utils"
 
 export function StyleSwitcher() {
   const [open, setOpen] = useState(false)
   const { style, setStyle } = useStyle()
+  const t = useTranslations("common.style")
 
   const handleSelect = (s: SiteStyle) => {
     setStyle(s)
@@ -29,20 +31,19 @@ export function StyleSwitcher() {
         size="icon"
         onClick={() => setOpen(true)}
         className="rounded-full"
-        title="切换风格"
+        title={t("toggle")}
       >
         <Palette className="h-5 w-5" />
-        <span className="sr-only">切换风格</span>
+        <span className="sr-only">{t("toggle")}</span>
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>选择网站风格</DialogTitle>
+            <DialogTitle>{t("dialogTitle")}</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-3 gap-3 pt-2">
             {STYLES.map((s) => {
-              const info = STYLE_LABELS[s]
               const isActive = style === s
               return (
                 <button
@@ -55,9 +56,9 @@ export function StyleSwitcher() {
                       : "border-border text-muted-foreground"
                   )}
                 >
-                  <span className="text-2xl leading-none">{info.icon}</span>
-                  <span className="text-sm font-medium">{info.label}</span>
-                  <span className="text-xs opacity-70">{info.desc}</span>
+                  <span className="text-2xl leading-none">{STYLE_ICONS[s]}</span>
+                  <span className="text-sm font-medium">{t(`${s}.label` as `default.label` | `pixel.label`)}</span>
+                  <span className="text-xs opacity-70">{t(`${s}.desc` as `default.desc` | `pixel.desc`)}</span>
                 </button>
               )
             })}

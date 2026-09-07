@@ -9,8 +9,8 @@
       "DUKE": "公爵",
       "KNIGHT": "騎士",
       "CIVILIAN": "市民"
-    }
-  },
+    },
+    "roleExpiresAt": "有効期限"
   "apiKey": {
     "title": "API Key 管理",
     "description": "OpenAPI にアクセスするための API キーを作成・管理します",
@@ -96,6 +96,28 @@
       "subject": "メール件名",
       "content": "メールテキスト内容",
       "html": "メール HTML 内容"
+    },
+    "typeSelector": {
+      "label": "Webhook タイプ",
+      "custom": "カスタム",
+      "customDesc": "生の JSON を送信。自前サービスに最適",
+      "wecom": "企業WeChat",
+      "wecomDesc": "企業WeChat グループボット Webhook",
+      "dingtalk": "DingTalk",
+      "dingtalkDesc": "DingTalk グループカスタムボット Webhook"
+    },
+    "wecomGuide": {
+      "title": "企業WeChat ボット設定",
+      "step1": "企業WeChat グループで「グループボット」を追加",
+      "step2": "ボットの Webhook URL をコピーして上に貼り付け",
+      "step3": "メール受信時に Markdown 形式でグループに通知されます"
+    },
+    "dingtalkGuide": {
+      "title": "DingTalk ボット設定",
+      "step1": "DingTalk グループで「カスタム（Webhook）」ボットを追加",
+      "step2": "セキュリティ設定で「カスタムキーワード」を選択し「メール」を入力",
+      "step3": "Webhook URL をコピーして上に貼り付け",
+      "step4": "メール受信時に Markdown 形式でグループに通知されます"
     }
   },
   "website": {
@@ -107,6 +129,31 @@
     "adminContact": "管理者連絡先",
     "adminContactPlaceholder": "メールまたはその他の連絡先",
     "maxEmails": "ユーザーあたりの最大メールボックス数",
+    "roleLimitsConfig": {
+      "title": "ロール権限設定",
+      "hint": "0 = 無制限、-1 = 禁止。変更後は再ログインが必要です。",
+      "roles": {
+        "civilian": "市民",
+        "knight": "ナイト",
+        "duke": "公爵"
+      },
+      "maxEmails": "メール上限数",
+      "maxPermanentEmails": "永久メール上限数",
+      "dailySendLimit": "1日の送信上限",
+      "countHint": "件",
+      "permanentHint": "件（0=不可）",
+      "sendHint": "通（-1=禁止）"
+    },
+    "upgradeUrlConfig": {
+      "title": "アップグレードURL設定",
+      "hint": "ユーザーがアップグレードボタンをクリックした際のリダイレクト先",
+      "knightLabel": "ナイトアップグレード",
+      "dukeLabel": "公爵アップグレード"
+    },
+    "siteStyle": {
+      "title": "サイトスタイル",
+      "hint": "すべての訪問者に適用されるビジュアルスタイルを選択"
+    },
     "turnstile": {
       "enable": "Cloudflare Turnstile を有効化",
       "enableDescription": "有効にすると、ユーザー名とパスワードでのログイン・登録に Turnstile 認証が必要になります",
@@ -146,5 +193,30 @@
     "cancel": "キャンセル",
     "deleteSuccess": "ユーザーを削除しました",
     "deleteFailed": "ユーザーの削除に失敗しました"
+  },
+  "benefits": {
+    "panelTitle": "私の特典",
+    "panelDesc": "ロールの特典を比較し、適切なプランを選んで管理者にアップグレードを依頼してください。",
+    "tableHeader": "特典",
+    "rows": {
+      "emailCount": "メール数",
+      "permanentEmail": "永久メール",
+      "dailySend": "1日の送信数",
+      "webhook": "Webhook",
+      "apiKey": "API Key",
+      "deleteCooldown": "削除クールダウン"
+    },
+    "unlimited": "無制限",
+    "countUnit": "{n} 件",
+    "sendUnit": "{n} 通",
+    "currentBadge": "現在",
+    "upgradeKnight": "ナイトにアップグレード →",
+    "upgradeDuke": "公爵にアップグレード →"
+  },
+  "tabs": {
+    "benefits": "私の特典",
+    "settings": "アカウント設定",
+    "admin": "管理パネル",
+    "noSettings": "現在のロールにはアカウント設定がありません"
   }
 }

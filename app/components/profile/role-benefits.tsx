@@ -4,13 +4,14 @@ import { Crown, Gem, Sword, User2, Check, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ROLES } from "@/lib/permissions"
 import { useSession } from "next-auth/react"
+import { useTranslations } from "next-intl"
 import { EMAIL_CONFIG } from "@/config"
 import type { RoleLimitsMap } from "@/hooks/use-config"
 
 const ROLE_CONFIGS = [
   {
     key: ROLES.CIVILIAN,
-    label: "平民",
+    labelKey: "CIVILIAN" as const,
     icon: User2,
     color: "text-gray-500",
     bg: "bg-gray-50 dark:bg-gray-900/50",
@@ -18,7 +19,7 @@ const ROLE_CONFIGS = [
   },
   {
     key: ROLES.KNIGHT,
-    label: "骑士",
+    labelKey: "KNIGHT" as const,
     icon: Sword,
     color: "text-blue-600",
     bg: "bg-blue-50 dark:bg-blue-950/30",
@@ -26,7 +27,7 @@ const ROLE_CONFIGS = [
   },
   {
     key: ROLES.DUKE,
-    label: "公爵",
+    labelKey: "DUKE" as const,
     icon: Gem,
     color: "text-purple-600",
     bg: "bg-purple-50 dark:bg-purple-950/30",
@@ -35,7 +36,7 @@ const ROLE_CONFIGS = [
   },
   {
     key: ROLES.EMPEROR,
-    label: "皇帝",
+    labelKey: "EMPEROR" as const,
     icon: Crown,
     color: "text-amber-600",
     bg: "bg-amber-50 dark:bg-amber-950/30",
@@ -43,60 +44,11 @@ const ROLE_CONFIGS = [
   },
 ] as const
 
-/** 将 maxEmails/maxPermanentEmails 数字转为展示文字，0 表示无限制 */
-function fmtCount(n: number, unit: string) {
-  return n === 0 ? "无限制" : `${n} ${unit}`
-}
-
-/** 将 dailySendLimit 数字转为展示文字，0 = 无限制，-1 = 禁止 */
-function fmtSend(n: number) {
-  if (n === 0) return "无限制"
-  if (n < 0) return false
-  return `${n} 封`
-}
-
 const DEFAULT_LIMITS: RoleLimitsMap = {
   emperor:  { maxEmails: EMAIL_CONFIG.ROLE_LIMITS.emperor.maxEmails,  maxPermanentEmails: EMAIL_CONFIG.ROLE_LIMITS.emperor.maxPermanentEmails,  dailySendLimit: EMAIL_CONFIG.ROLE_LIMITS.emperor.dailySendLimit,  allowPermanentEmail: EMAIL_CONFIG.ROLE_LIMITS.emperor.allowPermanentEmail  },
   duke:     { maxEmails: EMAIL_CONFIG.ROLE_LIMITS.duke.maxEmails,     maxPermanentEmails: EMAIL_CONFIG.ROLE_LIMITS.duke.maxPermanentEmails,     dailySendLimit: EMAIL_CONFIG.ROLE_LIMITS.duke.dailySendLimit,     allowPermanentEmail: EMAIL_CONFIG.ROLE_LIMITS.duke.allowPermanentEmail     },
   knight:   { maxEmails: EMAIL_CONFIG.ROLE_LIMITS.knight.maxEmails,   maxPermanentEmails: EMAIL_CONFIG.ROLE_LIMITS.knight.maxPermanentEmails,   dailySendLimit: EMAIL_CONFIG.ROLE_LIMITS.knight.dailySendLimit,   allowPermanentEmail: EMAIL_CONFIG.ROLE_LIMITS.knight.allowPermanentEmail   },
   civilian: { maxEmails: EMAIL_CONFIG.ROLE_LIMITS.civilian.maxEmails, maxPermanentEmails: EMAIL_CONFIG.ROLE_LIMITS.civilian.maxPermanentEmails, dailySendLimit: EMAIL_CONFIG.ROLE_LIMITS.civilian.dailySendLimit, allowPermanentEmail: EMAIL_CONFIG.ROLE_LIMITS.civilian.allowPermanentEmail },
-}
-
-/** 根据 roleLimits 动态生成权益行数据 */
-function buildBenefitRows(limits: RoleLimitsMap) {
-  const { civilian, knight, duke, emperor } = limits
-  return [
-    {
-      label: "邮箱数量",
-      values: [
-        fmtCount(civilian.maxEmails, "个"),
-        fmtCount(knight.maxEmails, "个"),
-        fmtCount(duke.maxEmails, "个"),
-        fmtCount(emperor.maxEmails, "个"),
-      ],
-    },
-    {
-      label: "永久邮箱",
-      values: [
-        civilian.maxPermanentEmails === 0 ? false : fmtCount(civilian.maxPermanentEmails, "个"),
-        knight.maxPermanentEmails === 0 ? false : fmtCount(knight.maxPermanentEmails, "个"),
-        duke.maxPermanentEmails === 0 ? false : fmtCount(duke.maxPermanentEmails, "个"),
-        emperor.maxPermanentEmails === 0 ? "无限制" : fmtCount(emperor.maxPermanentEmails, "个"),
-      ],
-    },
-    {
-      label: "每日发件",
-      values: [
-        fmtSend(civilian.dailySendLimit),
-        fmtSend(knight.dailySendLimit),
-        fmtSend(duke.dailySendLimit),
-        fmtSend(emperor.dailySendLimit),
-      ],
-    },
-    { label: "Webhook",  values: [false, false, true,  true ] },
-    { label: "API Key",  values: [false, false, true,  true ] },
-    { label: "删除冷却", values: ["24h", "24h", false, false] },
-  ] as { label: string; values: (string | boolean)[] }[]
 }
 
 function BenefitRow({ label, values }: { label: string; values: (string | boolean)[] }) {
@@ -126,6 +78,8 @@ interface RoleBenefitsTableProps {
 }
 
 export function RoleBenefitsTable({ compact, upgradeUrlKnight, upgradeUrlDuke, roleLimits }: RoleBenefitsTableProps) {
+  const t = useTranslations("profile.benefits")
+  const tRoles = useTranslations("profile.card.roles")
   const { data: session } = useSession()
   const currentRole = session?.user?.roles?.[0]?.name ?? ROLES.CIVILIAN
 
@@ -135,14 +89,49 @@ export function RoleBenefitsTable({ compact, upgradeUrlKnight, upgradeUrlDuke, r
     knight:   { ...DEFAULT_LIMITS.knight,   ...roleLimits?.knight   },
     civilian: { ...DEFAULT_LIMITS.civilian, ...roleLimits?.civilian },
   }
-  const rows = buildBenefitRows(mergedLimits)
+
+  /** 将 maxEmails/maxPermanentEmails 数字转为展示文字，0 表示无限制 */
+  function fmtCount(n: number) {
+    return n === 0 ? t("unlimited") : t("countUnit", { n })
+  }
+
+  /** 将 dailySendLimit 数字转为展示文字，0 = 无限制，-1 = 禁止 */
+  function fmtSend(n: number) {
+    if (n === 0) return t("unlimited")
+    if (n < 0) return false
+    return t("sendUnit", { n })
+  }
+
+  const { civilian, knight, duke, emperor } = mergedLimits
+  const rows = [
+    {
+      label: t("rows.emailCount"),
+      values: [fmtCount(civilian.maxEmails), fmtCount(knight.maxEmails), fmtCount(duke.maxEmails), fmtCount(emperor.maxEmails)],
+    },
+    {
+      label: t("rows.permanentEmail"),
+      values: [
+        civilian.maxPermanentEmails === 0 ? false : fmtCount(civilian.maxPermanentEmails),
+        knight.maxPermanentEmails   === 0 ? false : fmtCount(knight.maxPermanentEmails),
+        duke.maxPermanentEmails     === 0 ? false : fmtCount(duke.maxPermanentEmails),
+        emperor.maxPermanentEmails  === 0 ? t("unlimited") : fmtCount(emperor.maxPermanentEmails),
+      ],
+    },
+    {
+      label: t("rows.dailySend"),
+      values: [fmtSend(civilian.dailySendLimit), fmtSend(knight.dailySendLimit), fmtSend(duke.dailySendLimit), fmtSend(emperor.dailySendLimit)],
+    },
+    { label: "Webhook",              values: [false, false, true,  true ] },
+    { label: "API Key",              values: [false, false, true,  true ] },
+    { label: t("rows.deleteCooldown"), values: ["24h", "24h", false, false] },
+  ] as { label: string; values: (string | boolean)[] }[]
 
   return (
     <div className={cn("w-full overflow-x-auto", compact && "text-sm")}>
       <table className="w-full min-w-[480px]">
         <thead>
           <tr>
-            <th className="text-left pb-3 text-sm font-medium text-muted-foreground w-32">权益</th>
+            <th className="text-left pb-3 text-sm font-medium text-muted-foreground w-32">{t("tableHeader")}</th>
             {ROLE_CONFIGS.map(role => {
               const Icon = role.icon
               const isCurrent = role.key === currentRole
@@ -154,9 +143,11 @@ export function RoleBenefitsTable({ compact, upgradeUrlKnight, upgradeUrlDuke, r
                     isCurrent && "ring-2 ring-primary ring-offset-1"
                   )}>
                     <Icon className={cn("w-4 h-4", role.color)} />
-                    <span className={cn("text-xs font-semibold", role.color)}>{role.label}</span>
+                    <span className={cn("text-xs font-semibold", role.color)}>{tRoles(role.labelKey)}</span>
                     {isCurrent && (
-                      <span className="text-xs bg-primary text-primary-foreground px-1.5 rounded-full leading-tight">当前</span>
+                      <span className="text-xs bg-primary text-primary-foreground px-1.5 rounded-full leading-tight">
+                        {t("currentBadge")}
+                      </span>
                     )}
                   </div>
                 </th>
@@ -181,7 +172,7 @@ export function RoleBenefitsTable({ compact, upgradeUrlKnight, upgradeUrlDuke, r
               rel="noopener noreferrer"
               className="flex-1 text-center py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors"
             >
-              升级为骑士 →
+              {t("upgradeKnight")}
             </a>
           )}
           {upgradeUrlDuke && (
@@ -191,7 +182,7 @@ export function RoleBenefitsTable({ compact, upgradeUrlKnight, upgradeUrlDuke, r
               rel="noopener noreferrer"
               className="flex-1 text-center py-2 px-4 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium transition-colors"
             >
-              升级为公爵 →
+              {t("upgradeDuke")}
             </a>
           )}
         </div>

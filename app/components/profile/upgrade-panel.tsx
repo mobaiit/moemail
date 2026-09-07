@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { TrendingUp } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { RoleBenefitsTable } from "./role-benefits"
 import type { RoleLimitsMap } from "@/hooks/use-config"
 
@@ -12,6 +13,7 @@ interface UpgradeConfig {
 }
 
 export function UpgradePanel() {
+  const t = useTranslations("profile.benefits")
   const [config, setConfig] = useState<UpgradeConfig>({})
 
   useEffect(() => {
@@ -29,10 +31,10 @@ export function UpgradePanel() {
     <div className="bg-background rounded-lg border-2 border-primary/20 p-6 space-y-4">
       <div className="flex items-center gap-2">
         <TrendingUp className="w-5 h-5 text-primary" />
-        <h2 className="text-lg font-semibold">我的权益</h2>
+        <h2 className="text-lg font-semibold">{t("panelTitle")}</h2>
       </div>
       <p className="text-sm text-muted-foreground">
-        对比各角色权益，选择适合你的套餐，联系管理员完成升级。
+        {t("panelDesc")}
       </p>
       <RoleBenefitsTable
         compact

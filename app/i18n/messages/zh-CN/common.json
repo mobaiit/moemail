@@ -6,7 +6,8 @@
     "ok": "确定",
     "cancel": "取消",
     "save": "保存",
-    "delete": "删除"
+    "delete": "删除",
+    "close": "关闭"
   },
   "nav": {
     "home": "首页",
@@ -22,5 +23,27 @@
     "description": "如有需要更多功能，请联系网站管理员",
     "adminContact": "管理员联系方式：",
     "copied": "已复制！"
+  },
+  "theme": {
+    "toggle": "切换主题"
+  },
+  "style": {
+    "toggle": "切换风格",
+    "dialogTitle": "选择网站风格",
+    "default": {
+      "label": "默认",
+      "desc": "圆润简约"
+    },
+    "pixel": {
+      "label": "像素",
+      "desc": "复古方块"
+    }
+  },
+  "expiryBanner": {
+    "message": "您的 <strong>{role}</strong> 权限将于 <strong>{date}</strong> 到期，剩余 <strong>{time}</strong>。请联系管理员续期，避免功能受限。",
+    "days": "{days} 天 {hours} 小时",
+    "hours": "{hours} 小时",
+    "viewDetails": "查看详情",
+    "dismiss": "关闭提醒"
   }
 }

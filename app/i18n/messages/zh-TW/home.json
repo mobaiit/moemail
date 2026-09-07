@@ -22,6 +22,26 @@
   "actions": {
     "enterMailbox": "進入郵箱",
     "getStarted": "開始使用"
+  },
+  "benefits": {
+    "sectionTitle": "角色權益對比",
+    "sectionDesc": "選擇適合你的方案，聯絡管理員升級",
+    "tableHeader": "權益",
+    "rows": {
+      "emailCount": "郵箱數量",
+      "permanentEmail": "永久郵箱",
+      "dailySend": "每日發件",
+      "webhook": "Webhook",
+      "apiKey": "API Key",
+      "deleteCooldown": "刪除冷卻"
+    },
+    "unlimited": "無限制",
+    "countUnit": "{n} 個",
+    "sendUnit": "{n} 封",
+    "currentBadge": "目前",
+    "upgradeKnight": "升級為騎士 →",
+    "upgradeDuke": "升級為公爵 →",
+    "viewBenefits": "查看我的權益"
   }
 }
 

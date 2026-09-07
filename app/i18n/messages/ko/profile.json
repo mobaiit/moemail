@@ -9,8 +9,8 @@
       "DUKE": "공작",
       "KNIGHT": "기사",
       "CIVILIAN": "평민"
-    }
-  },
+    },
+    "roleExpiresAt": "만료"
   "apiKey": {
     "title": "API Key 관리",
     "description": "OpenAPI 접근을 위한 API 키 생성 및 관리",
@@ -96,6 +96,28 @@
       "subject": "이메일 제목",
       "content": "이메일 텍스트 내용",
       "html": "이메일 HTML 내용"
+    },
+    "typeSelector": {
+      "label": "Webhook 유형",
+      "custom": "커스텀",
+      "customDesc": "원시 JSON 전송, 자체 호스팅 서비스에 적합",
+      "wecom": "WeCom",
+      "wecomDesc": "WeCom 그룹 봇 Webhook",
+      "dingtalk": "DingTalk",
+      "dingtalkDesc": "DingTalk 그룹 커스텀 봇 Webhook"
+    },
+    "wecomGuide": {
+      "title": "WeCom 봇 설정",
+      "step1": "WeCom 그룹에서 「그룹 봇」 추가",
+      "step2": "봇의 Webhook URL을 복사하여 위에 붙여넣기",
+      "step3": "이메일 수신 시 Markdown 형식으로 그룹에 전송됩니다"
+    },
+    "dingtalkGuide": {
+      "title": "DingTalk 봇 설정",
+      "step1": "DingTalk 그룹에서 「커스텀(Webhook)」 봇 추가",
+      "step2": "보안 설정에서 「커스텀 키워드」를 선택하고 「메일」 입력",
+      "step3": "Webhook URL을 복사하여 위에 붙여넣기",
+      "step4": "이메일 수신 시 Markdown 형식으로 그룹에 전송됩니다"
     }
   },
   "website": {
@@ -107,6 +129,31 @@
     "adminContact": "관리자 연락처",
     "adminContactPlaceholder": "이메일 또는 기타 연락 방법",
     "maxEmails": "사용자당 최대 이메일 수",
+    "roleLimitsConfig": {
+      "title": "역할 권한 설정",
+      "hint": "0 = 무제한, -1 = 비활성화. 변경 후 다시 로그인하세요.",
+      "roles": {
+        "civilian": "평민",
+        "knight": "기사",
+        "duke": "공작"
+      },
+      "maxEmails": "이메일 최대 수",
+      "maxPermanentEmails": "영구 이메일 최대 수",
+      "dailySendLimit": "일일 발송 한도",
+      "countHint": "개",
+      "permanentHint": "개 (0=불가)",
+      "sendHint": "통 (-1=비활성)"
+    },
+    "upgradeUrlConfig": {
+      "title": "업그레이드 URL 설정",
+      "hint": "사용자가 업그레이드 버튼 클릭 시 이동할 URL",
+      "knightLabel": "나이트 업그레이드",
+      "dukeLabel": "공작 업그레이드"
+    },
+    "siteStyle": {
+      "title": "웹사이트 스타일",
+      "hint": "모든 방문자에게 적용되는 시각 스타일 선택"
+    },
     "turnstile": {
       "enable": "Cloudflare Turnstile 활성화",
       "enableDescription": "활성화되면 사용자 이름/비밀번호 로그인 및 회원가입에 Turnstile 인증이 필요합니다",
@@ -146,5 +193,30 @@
     "cancel": "취소",
     "deleteSuccess": "사용자가 삭제되었습니다",
     "deleteFailed": "사용자 삭제에 실패했습니다"
+  },
+  "benefits": {
+    "panelTitle": "내 혜택",
+    "panelDesc": "역할별 혜택을 비교하고 원하는 플랜을 선택한 후 관리자에게 업그레이드를 요청하세요.",
+    "tableHeader": "혜택",
+    "rows": {
+      "emailCount": "이메일 수",
+      "permanentEmail": "영구 이메일",
+      "dailySend": "일일 발송",
+      "webhook": "Webhook",
+      "apiKey": "API Key",
+      "deleteCooldown": "삭제 쿨다운"
+    },
+    "unlimited": "무제한",
+    "countUnit": "{n} 개",
+    "sendUnit": "{n} 통",
+    "currentBadge": "현재",
+    "upgradeKnight": "나이트로 업그레이드 →",
+    "upgradeDuke": "공작으로 업그레이드 →"
+  },
+  "tabs": {
+    "benefits": "내 혜택",
+    "settings": "계정 설정",
+    "admin": "관리자 패널",
+    "noSettings": "현재 역할에는 계정 설정 항목이 없습니다"
   }
 }

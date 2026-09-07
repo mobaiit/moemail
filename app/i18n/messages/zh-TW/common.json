@@ -22,5 +22,27 @@
     "description": "如需更多功能，請聯絡網站管理員",
     "adminContact": "管理員聯絡方式：",
     "copied": "已複製！"
+  },
+  "theme": {
+    "toggle": "切換主題"
+  },
+  "style": {
+    "toggle": "切換風格",
+    "dialogTitle": "選擇網站風格",
+    "default": {
+      "label": "預設",
+      "desc": "圓潤簡約"
+    },
+    "pixel": {
+      "label": "像素",
+      "desc": "復古方塊"
+    }
+  },
+  "expiryBanner": {
+    "message": "您的 <strong>{role}</strong> 權限將於 <strong>{date}</strong> 到期，剩餘 <strong>{time}</strong>。請聯絡管理員續期，以免功能受限。",
+    "days": "{days} 天 {hours} 小時",
+    "hours": "{hours} 小時",
+    "viewDetails": "查看詳情",
+    "dismiss": "關閉提醒"
   }
 }

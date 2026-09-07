@@ -22,6 +22,26 @@
   "actions": {
     "enterMailbox": "メールボックスに入る",
     "getStarted": "今すぐ始める"
+  },
+  "benefits": {
+    "sectionTitle": "ロール特典比較",
+    "sectionDesc": "ご希望のプランを選択し、管理者にアップグレードを依頼してください",
+    "tableHeader": "特典",
+    "rows": {
+      "emailCount": "メール数",
+      "permanentEmail": "永久メール",
+      "dailySend": "1日の送信数",
+      "webhook": "Webhook",
+      "apiKey": "API Key",
+      "deleteCooldown": "削除クールダウン"
+    },
+    "unlimited": "無制限",
+    "countUnit": "{n} 件",
+    "sendUnit": "{n} 通",
+    "currentBadge": "現在",
+    "upgradeKnight": "ナイトにアップグレード →",
+    "upgradeDuke": "公爵にアップグレード →",
+    "viewBenefits": "特典を確認する"
   }
 }
 

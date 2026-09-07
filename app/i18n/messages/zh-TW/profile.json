@@ -9,8 +9,8 @@
       "DUKE": "公爵",
       "KNIGHT": "騎士",
       "CIVILIAN": "平民"
-    }
-  },
+    },
+    "roleExpiresAt": "到期"
   "apiKey": {
     "title": "API Key 管理",
     "description": "建立與管理用於存取 OpenAPI 的 API 金鑰",
@@ -96,6 +96,28 @@
       "subject": "郵件主旨",
       "content": "郵件文字內容",
       "html": "郵件 HTML 內容"
+    },
+    "typeSelector": {
+      "label": "Webhook 類型",
+      "custom": "自訂",
+      "customDesc": "發送原始 JSON，適合自建服務",
+      "wecom": "企業微信",
+      "wecomDesc": "企業微信群機器人 Webhook",
+      "dingtalk": "釘釘",
+      "dingtalkDesc": "釘釘群自訂機器人 Webhook"
+    },
+    "wecomGuide": {
+      "title": "企業微信機器人設定",
+      "step1": "在企業微信群中新增「群機器人」",
+      "step2": "複製機器人的 Webhook 地址填入上方",
+      "step3": "收到郵件後將以 Markdown 格式推送到群"
+    },
+    "dingtalkGuide": {
+      "title": "釘釘機器人設定",
+      "step1": "在釘釘群中新增「自訂（Webhook）」機器人",
+      "step2": "安全設定選擇「自訂關鍵字」，填入「郵件」",
+      "step3": "複製 Webhook 地址填入上方",
+      "step4": "收到郵件後將以 Markdown 格式推送到群"
     }
   },
   "website": {
@@ -107,6 +129,31 @@
     "adminContact": "管理員聯絡方式",
     "adminContactPlaceholder": "郵箱或其他聯絡方式",
     "maxEmails": "每個使用者最大郵箱數",
+    "roleLimitsConfig": {
+      "title": "角色權益設定",
+      "hint": "0 = 無限制，-1 = 禁止，修改後需重新登入生效",
+      "roles": {
+        "civilian": "平民",
+        "knight": "騎士",
+        "duke": "公爵"
+      },
+      "maxEmails": "郵箱數量上限",
+      "maxPermanentEmails": "永久郵箱上限",
+      "dailySendLimit": "每日發件上限",
+      "countHint": "個",
+      "permanentHint": "個（0=不允許）",
+      "sendHint": "封（-1=禁止）"
+    },
+    "upgradeUrlConfig": {
+      "title": "升級地址設定",
+      "hint": "使用者點擊升級按鈕時跳轉的地址",
+      "knightLabel": "騎士升級",
+      "dukeLabel": "公爵升級"
+    },
+    "siteStyle": {
+      "title": "網站風格",
+      "hint": "選擇網站的視覺風格，對所有訪客生效"
+    },
     "turnstile": {
       "enable": "啟用 Cloudflare Turnstile",
       "enableDescription": "啟用後，使用者名稱與密碼的登入／註冊需要通過 Turnstile 驗證",
@@ -146,5 +193,30 @@
     "cancel": "取消",
     "deleteSuccess": "使用者刪除成功",
     "deleteFailed": "刪除使用者失敗"
+  },
+  "benefits": {
+    "panelTitle": "我的權益",
+    "panelDesc": "對比各角色權益，選擇適合你的方案，聯絡管理員完成升級。",
+    "tableHeader": "權益",
+    "rows": {
+      "emailCount": "郵箱數量",
+      "permanentEmail": "永久郵箱",
+      "dailySend": "每日發件",
+      "webhook": "Webhook",
+      "apiKey": "API Key",
+      "deleteCooldown": "刪除冷卻"
+    },
+    "unlimited": "無限制",
+    "countUnit": "{n} 個",
+    "sendUnit": "{n} 封",
+    "currentBadge": "目前",
+    "upgradeKnight": "升級為騎士 →",
+    "upgradeDuke": "升級為公爵 →"
+  },
+  "tabs": {
+    "benefits": "我的權益",
+    "settings": "帳號設定",
+    "admin": "管理後台",
+    "noSettings": "目前角色暫無帳號設定項目"
   }
 }

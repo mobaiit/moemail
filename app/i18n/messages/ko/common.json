@@ -22,5 +22,27 @@
     "description": "더 많은 기능이 필요하시면 사이트 관리자에게 문의하세요.",
     "adminContact": "관리자 연락처：",
     "copied": "복사됨！"
+  },
+  "theme": {
+    "toggle": "테마 전환"
+  },
+  "style": {
+    "toggle": "스타일 전환",
+    "dialogTitle": "웹사이트 스타일 선택",
+    "default": {
+      "label": "기본",
+      "desc": "부드럽고 단순"
+    },
+    "pixel": {
+      "label": "픽셀",
+      "desc": "복고풍 블록"
+    }
+  },
+  "expiryBanner": {
+    "message": "<strong>{role}</strong> 역할이 <strong>{date}</strong>에 만료됩니다. <strong>{time}</strong> 남았습니다. 기능 제한 전에 관리자에게 연장을 요청하세요.",
+    "days": "{days}일 {hours}시간",
+    "hours": "{hours}시간",
+    "viewDetails": "자세히 보기",
+    "dismiss": "닫기"
   }
 }

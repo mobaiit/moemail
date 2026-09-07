@@ -6,7 +6,8 @@
     "ok": "OK",
     "cancel": "Cancel",
     "save": "Save",
-    "delete": "Delete"
+    "delete": "Delete",
+    "close": "Close"
   },
   "nav": {
     "home": "Home",
@@ -22,5 +23,27 @@
     "description": "If you need more features, please contact the site administrator.",
     "adminContact": "Admin contact: ",
     "copied": "Copied!"
+  },
+  "theme": {
+    "toggle": "Toggle theme"
+  },
+  "style": {
+    "toggle": "Toggle style",
+    "dialogTitle": "Choose Website Style",
+    "default": {
+      "label": "Default",
+      "desc": "Smooth & minimal"
+    },
+    "pixel": {
+      "label": "Pixel",
+      "desc": "Retro blocks"
+    }
+  },
+  "expiryBanner": {
+    "message": "Your <strong>{role}</strong> role will expire on <strong>{date}</strong>, <strong>{time}</strong> remaining. Contact admin to renew before losing access.",
+    "days": "{days}d {hours}h",
+    "hours": "{hours}h",
+    "viewDetails": "View Details",
+    "dismiss": "Dismiss"
   }
 }

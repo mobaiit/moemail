@@ -22,6 +22,26 @@
   "actions": {
     "enterMailbox": "进入邮箱",
     "getStarted": "开始使用"
+  },
+  "benefits": {
+    "sectionTitle": "角色权益对比",
+    "sectionDesc": "选择适合你的套餐，联系管理员升级",
+    "tableHeader": "权益",
+    "rows": {
+      "emailCount": "邮箱数量",
+      "permanentEmail": "永久邮箱",
+      "dailySend": "每日发件",
+      "webhook": "Webhook",
+      "apiKey": "API Key",
+      "deleteCooldown": "删除冷却"
+    },
+    "unlimited": "无限制",
+    "countUnit": "{n} 个",
+    "sendUnit": "{n} 封",
+    "currentBadge": "当前",
+    "upgradeKnight": "升级为骑士 →",
+    "upgradeDuke": "升级为公爵 →",
+    "viewBenefits": "查看我的权益"
   }
 }
 

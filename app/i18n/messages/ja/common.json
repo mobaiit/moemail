@@ -22,6 +22,28 @@
     "description": "より多くの機能が必要な場合は、サイト管理者にお問い合わせください。",
     "adminContact": "管理者の連絡先：",
     "copied": "コピーしました！"
+  },
+  "theme": {
+    "toggle": "テーマを切り替える"
+  },
+  "style": {
+    "toggle": "スタイルを切り替える",
+    "dialogTitle": "サイトスタイルを選択",
+    "default": {
+      "label": "デフォルト",
+      "desc": "シンプル＆スムーズ"
+    },
+    "pixel": {
+      "label": "ピクセル",
+      "desc": "レトロブロック"
+    }
+  },
+  "expiryBanner": {
+    "message": "{role} のロールは <strong>{date}</strong> に期限切れになります。残り <strong>{time}</strong>。機能が制限される前に管理者に更新を依頼してください。",
+    "days": "{days} 日 {hours} 時間",
+    "hours": "{hours} 時間",
+    "viewDetails": "詳細を見る",
+    "dismiss": "閉じる"
   }
 }
 

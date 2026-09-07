@@ -22,5 +22,25 @@
   "actions": {
     "enterMailbox": "메일함 입장",
     "getStarted": "시작하기"
+  },
+  "benefits": {
+    "sectionTitle": "역할 혜택 비교",
+    "sectionDesc": "맞는 플랜을 선택하고 관리자에게 업그레이드를 요청하세요",
+    "tableHeader": "혜택",
+    "rows": {
+      "emailCount": "이메일 수",
+      "permanentEmail": "영구 이메일",
+      "dailySend": "일일 발송",
+      "webhook": "Webhook",
+      "apiKey": "API Key",
+      "deleteCooldown": "삭제 쿨다운"
+    },
+    "unlimited": "무제한",
+    "countUnit": "{n} 개",
+    "sendUnit": "{n} 통",
+    "currentBadge": "현재",
+    "upgradeKnight": "나이트로 업그레이드 →",
+    "upgradeDuke": "공작으로 업그레이드 →",
+    "viewBenefits": "내 혜택 보기"
   }
 }

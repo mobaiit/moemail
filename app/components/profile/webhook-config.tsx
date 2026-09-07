@@ -24,11 +24,7 @@ import {
 } from "@/components/ui/select"
 import type { WebhookType } from "@/lib/webhook"
 
-const WEBHOOK_TYPES: { value: WebhookType; label: string; desc: string }[] = [
-  { value: "custom",   label: "自定义",   desc: "发送原始 JSON，适合自建服务" },
-  { value: "wecom",    label: "企业微信", desc: "企业微信群机器人 Webhook" },
-  { value: "dingtalk", label: "钉钉",     desc: "钉钉群自定义机器人 Webhook" },
-]
+const WEBHOOK_TYPE_VALUES = ["custom", "wecom", "dingtalk"] as const
 
 export function WebhookConfig() {
   const t = useTranslations("profile.webhook")
@@ -42,6 +38,12 @@ export function WebhookConfig() {
   const [showDocs, setShowDocs] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
   const { toast } = useToast()
+
+  const WEBHOOK_TYPES = WEBHOOK_TYPE_VALUES.map(value => ({
+    value,
+    label: t(`typeSelector.${value}` as `typeSelector.custom`),
+    desc:  t(`typeSelector.${value}Desc` as `typeSelector.customDesc`),
+  }))
 
   useEffect(() => {
     fetch("/api/webhook")
@@ -137,7 +139,7 @@ export function WebhookConfig() {
         <div className="space-y-4">
           {/* 类型选择 */}
           <div className="space-y-2">
-            <Label>Webhook 类型</Label>
+            <Label>{t("typeSelector.label")}</Label>
             <Select value={type} onValueChange={(v) => setType(v as WebhookType)}>
               <SelectTrigger>
                 <SelectValue />
@@ -235,11 +237,11 @@ export function WebhookConfig() {
           {/* 企微说明 */}
           {type === "wecom" && (
             <div className="rounded-md bg-muted p-4 text-sm space-y-2">
-              <p className="font-medium">企业微信机器人配置</p>
+              <p className="font-medium">{t("wecomGuide.title")}</p>
               <ol className="list-decimal list-inside space-y-1 text-muted-foreground text-xs">
-                <li>在企业微信群中添加「群机器人」</li>
-                <li>复制机器人的 Webhook 地址填入上方</li>
-                <li>收到邮件后将以 Markdown 格式推送到群</li>
+                <li>{t("wecomGuide.step1")}</li>
+                <li>{t("wecomGuide.step2")}</li>
+                <li>{t("wecomGuide.step3")}</li>
               </ol>
             </div>
           )}
@@ -247,12 +249,12 @@ export function WebhookConfig() {
           {/* 钉钉说明 */}
           {type === "dingtalk" && (
             <div className="rounded-md bg-muted p-4 text-sm space-y-2">
-              <p className="font-medium">钉钉机器人配置</p>
+              <p className="font-medium">{t("dingtalkGuide.title")}</p>
               <ol className="list-decimal list-inside space-y-1 text-muted-foreground text-xs">
-                <li>在钉钉群中添加「自定义（Webhook）」机器人</li>
-                <li>安全设置选择「自定义关键词」，填入「邮件」</li>
-                <li>复制 Webhook 地址填入上方</li>
-                <li>收到邮件后将以 Markdown 格式推送到群</li>
+                <li>{t("dingtalkGuide.step1")}</li>
+                <li>{t("dingtalkGuide.step2")}</li>
+                <li>{t("dingtalkGuide.step3")}</li>
+                <li>{t("dingtalkGuide.step4")}</li>
               </ol>
             </div>
           )}

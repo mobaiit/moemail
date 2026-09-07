@@ -9,7 +9,8 @@
       "DUKE": "Duke",
       "KNIGHT": "Knight",
       "CIVILIAN": "Civilian"
-    }
+    },
+    "roleExpiresAt": "Expires"
   },
   "apiKey": {
     "title": "API Key Management",
@@ -96,6 +97,28 @@
       "subject": "Email Subject",
       "content": "Email text content",
       "html": "Email HTML content"
+    },
+    "typeSelector": {
+      "label": "Webhook Type",
+      "custom": "Custom",
+      "customDesc": "Send raw JSON, suitable for self-hosted services",
+      "wecom": "WeCom",
+      "wecomDesc": "WeCom group bot Webhook",
+      "dingtalk": "DingTalk",
+      "dingtalkDesc": "DingTalk group custom bot Webhook"
+    },
+    "wecomGuide": {
+      "title": "WeCom Bot Configuration",
+      "step1": "Add a \"Group Bot\" in your WeCom group",
+      "step2": "Copy the bot's Webhook URL and paste it above",
+      "step3": "Emails will be pushed to the group in Markdown format"
+    },
+    "dingtalkGuide": {
+      "title": "DingTalk Bot Configuration",
+      "step1": "Add a \"Custom (Webhook)\" bot in your DingTalk group",
+      "step2": "Set security to \"Custom keyword\", enter \"Mail\"",
+      "step3": "Copy the Webhook URL and paste it above",
+      "step4": "Emails will be pushed to the group in Markdown format"
     }
   },
   "website": {
@@ -107,6 +130,31 @@
     "adminContact": "Admin Contact",
     "adminContactPlaceholder": "Email or other contact method",
     "maxEmails": "Max Emails per User",
+    "roleLimitsConfig": {
+      "title": "Role Limits Configuration",
+      "hint": "0 = unlimited, -1 = disabled. Re-login required after changes.",
+      "roles": {
+        "civilian": "Civilian",
+        "knight": "Knight",
+        "duke": "Duke"
+      },
+      "maxEmails": "Max Emails",
+      "maxPermanentEmails": "Max Permanent Emails",
+      "dailySendLimit": "Daily Send Limit",
+      "countHint": "emails",
+      "permanentHint": "emails (0=disabled)",
+      "sendHint": "emails (-1=disabled)"
+    },
+    "upgradeUrlConfig": {
+      "title": "Upgrade URL Configuration",
+      "hint": "URL to redirect when user clicks upgrade button",
+      "knightLabel": "Knight Upgrade",
+      "dukeLabel": "Duke Upgrade"
+    },
+    "siteStyle": {
+      "title": "Website Style",
+      "hint": "Choose the visual style for all visitors"
+    },
     "turnstile": {
       "enable": "Enable Cloudflare Turnstile",
       "enableDescription": "When enabled, username/password login and registration require Turnstile verification",
@@ -146,5 +194,30 @@
     "cancel": "Cancel",
     "deleteSuccess": "User deleted successfully",
     "deleteFailed": "Failed to delete user"
+  },
+  "benefits": {
+    "panelTitle": "My Benefits",
+    "panelDesc": "Compare role benefits, choose the plan that suits you, and contact admin to upgrade.",
+    "tableHeader": "Benefit",
+    "rows": {
+      "emailCount": "Email Count",
+      "permanentEmail": "Permanent Email",
+      "dailySend": "Daily Send",
+      "webhook": "Webhook",
+      "apiKey": "API Key",
+      "deleteCooldown": "Delete Cooldown"
+    },
+    "unlimited": "Unlimited",
+    "countUnit": "{n} emails",
+    "sendUnit": "{n} emails/day",
+    "currentBadge": "Current",
+    "upgradeKnight": "Upgrade to Knight →",
+    "upgradeDuke": "Upgrade to Duke →"
+  },
+  "tabs": {
+    "benefits": "My Benefits",
+    "settings": "Account Settings",
+    "admin": "Admin Panel",
+    "noSettings": "No account settings available for current role"
   }
 }

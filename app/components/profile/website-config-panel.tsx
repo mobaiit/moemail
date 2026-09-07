@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { EMAIL_CONFIG } from "@/config"
-import { STYLES, STYLE_LABELS, type SiteStyle } from "@/lib/style"
+import { STYLES, STYLE_ICONS, type SiteStyle } from "@/lib/style"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 
@@ -75,6 +75,7 @@ function RoleLimitRow({
 export function WebsiteConfigPanel() {
   const t = useTranslations("profile.website")
   const tCard = useTranslations("profile.card")
+  const tStyle = useTranslations("common.style")
   const [defaultRole, setDefaultRole] = useState<string>("")
   const [emailDomains, setEmailDomains] = useState<string>("")
   const [adminContact, setAdminContact] = useState<string>("")
@@ -210,33 +211,33 @@ export function WebsiteConfigPanel() {
         {/* 角色权益配置 */}
         <div className="rounded-lg border border-dashed border-primary/40 p-4 space-y-4">
           <div>
-            <Label className="text-sm font-medium">角色权益配置</Label>
-            <p className="text-xs text-muted-foreground mt-1">0 = 无限制，-1 = 禁止，修改后重新登录生效</p>
+            <Label className="text-sm font-medium">{t("roleLimitsConfig.title")}</Label>
+            <p className="text-xs text-muted-foreground mt-1">{t("roleLimitsConfig.hint")}</p>
           </div>
 
           {(["civilian", "knight", "duke"] as const).map(role => {
-            const roleLabel = { civilian: "平民", knight: "骑士", duke: "公爵" }[role]
+            const roleLabel = t(`roleLimitsConfig.roles.${role}` as `roleLimitsConfig.roles.civilian`)
             return (
               <div key={role} className="space-y-2">
                 <p className="text-xs font-medium text-muted-foreground">{roleLabel}</p>
                 <div className="space-y-1.5 pl-2">
                   <RoleLimitRow
-                    label="邮箱数量上限"
+                    label={t("roleLimitsConfig.maxEmails")}
                     value={roleLimits[role].maxEmails}
                     onChange={v => updateLimit(role, "maxEmails", v)}
-                    hint="个"
+                    hint={t("roleLimitsConfig.countHint")}
                   />
                   <RoleLimitRow
-                    label="永久邮箱上限"
+                    label={t("roleLimitsConfig.maxPermanentEmails")}
                     value={roleLimits[role].maxPermanentEmails}
                     onChange={v => updateLimit(role, "maxPermanentEmails", v)}
-                    hint="个（0=不允许）"
+                    hint={t("roleLimitsConfig.permanentHint")}
                   />
                   <RoleLimitRow
-                    label="每日发件上限"
+                    label={t("roleLimitsConfig.dailySendLimit")}
                     value={roleLimits[role].dailySendLimit}
                     onChange={v => updateLimit(role, "dailySendLimit", v)}
-                    hint="封（-1=禁止）"
+                    hint={t("roleLimitsConfig.sendHint")}
                   />
                 </div>
               </div>
@@ -247,16 +248,16 @@ export function WebsiteConfigPanel() {
         {/* 升级地址 */}
         <div className="rounded-lg border border-dashed border-primary/40 p-4 space-y-3">
           <div>
-            <Label className="text-sm font-medium">升级地址配置</Label>
-            <p className="text-xs text-muted-foreground mt-1">用户点击升级按钮时跳转的地址</p>
+            <Label className="text-sm font-medium">{t("upgradeUrlConfig.title")}</Label>
+            <p className="text-xs text-muted-foreground mt-1">{t("upgradeUrlConfig.hint")}</p>
           </div>
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <span className="text-xs text-muted-foreground w-16 shrink-0">骑士升级</span>
+              <span className="text-xs text-muted-foreground w-16 shrink-0">{t("upgradeUrlConfig.knightLabel")}</span>
               <Input value={upgradeUrlKnight} onChange={e => setUpgradeUrlKnight(e.target.value)} placeholder="https://..." type="url" />
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-xs text-muted-foreground w-16 shrink-0">公爵升级</span>
+              <span className="text-xs text-muted-foreground w-16 shrink-0">{t("upgradeUrlConfig.dukeLabel")}</span>
               <Input value={upgradeUrlDuke} onChange={e => setUpgradeUrlDuke(e.target.value)} placeholder="https://..." type="url" />
             </div>
           </div>
@@ -264,11 +265,10 @@ export function WebsiteConfigPanel() {
 
         {/* 网站风格 */}
         <div className="rounded-lg border border-dashed border-primary/40 p-4 space-y-2">
-          <Label className="text-sm font-medium">网站风格</Label>
-          <p className="text-xs text-muted-foreground">选择网站的视觉风格，对所有访客生效</p>
+          <Label className="text-sm font-medium">{t("siteStyle.title")}</Label>
+          <p className="text-xs text-muted-foreground">{t("siteStyle.hint")}</p>
           <div className="grid grid-cols-3 gap-2 pt-1">
             {STYLES.map(s => {
-              const info = STYLE_LABELS[s]
               return (
                 <button
                   key={s}
@@ -279,9 +279,9 @@ export function WebsiteConfigPanel() {
                     siteStyle === s ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"
                   )}
                 >
-                  <span className="text-xl leading-none">{info.icon}</span>
-                  <span className="text-xs font-medium">{info.label}</span>
-                  <span className="text-xs opacity-60">{info.desc}</span>
+                  <span className="text-xl leading-none">{STYLE_ICONS[s]}</span>
+                  <span className="text-xs font-medium">{tStyle(`${s}.label` as `default.label` | `pixel.label`)}</span>
+                  <span className="text-xs opacity-60">{tStyle(`${s}.desc` as `default.desc` | `pixel.desc`)}</span>
                 </button>
               )
             })}

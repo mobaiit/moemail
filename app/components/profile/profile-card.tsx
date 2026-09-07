@@ -55,6 +55,7 @@ export function ProfileCard({ user }: ProfileCardProps) {
   const tAuth = useTranslations("auth.signButton")
   const tWebhook = useTranslations("profile.webhook")
   const tNav = useTranslations("common.nav")
+  const tTabs = useTranslations("profile.tabs")
   const locale = useLocale()
   const router = useRouter()
   const { checkPermission } = useRolePermission()
@@ -125,7 +126,7 @@ export function ProfileCard({ user }: ProfileCardProps) {
                 })}
                 {user.roleExpiresAt && role !== ROLES.CIVILIAN && role !== ROLES.EMPEROR && (
                   <span className="text-xs text-muted-foreground px-2 py-0.5 rounded border border-border">
-                    到期：{new Date(user.roleExpiresAt).toLocaleDateString("zh-CN")}
+                    {t("roleExpiresAt")}：{new Date(user.roleExpiresAt).toLocaleDateString(locale)}
                   </span>
                 )}
               </div>
@@ -139,16 +140,16 @@ export function ProfileCard({ user }: ProfileCardProps) {
         <TabsList className={`w-full ${isEmperor ? "grid-cols-3" : "grid-cols-2"} grid h-auto p-1`}>
           <TabsTrigger value="benefits" className="flex items-center gap-1.5 py-2">
             <TrendingUp className="w-4 h-4" />
-            <span>我的权益</span>
+            <span>{tTabs("benefits")}</span>
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-1.5 py-2">
             <Settings className="w-4 h-4" />
-            <span>账号设置</span>
+            <span>{tTabs("settings")}</span>
           </TabsTrigger>
           {isEmperor && (
             <TabsTrigger value="admin" className="flex items-center gap-1.5 py-2">
               <Shield className="w-4 h-4" />
-              <span>管理后台</span>
+              <span>{tTabs("admin")}</span>
             </TabsTrigger>
           )}
         </TabsList>
@@ -173,7 +174,7 @@ export function ProfileCard({ user }: ProfileCardProps) {
           {user.providers && user.providers.length === 0 && <ChangePasswordPanel />}
           {!hasAccountSettings && (
             <div className="text-center py-12 text-muted-foreground text-sm">
-              当前角色暂无账号设置项
+              {tTabs("noSettings")}
             </div>
           )}
         </TabsContent>
