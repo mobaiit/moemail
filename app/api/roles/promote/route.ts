@@ -2,7 +2,6 @@ import { createDb } from "@/lib/db";
 import { roles, userRoles } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { ROLES } from "@/lib/permissions";
-import { assignRoleToUser } from "@/lib/auth";
 import { checkPermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 

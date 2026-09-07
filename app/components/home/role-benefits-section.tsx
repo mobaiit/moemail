@@ -1,7 +1,6 @@
 "use client"
 
 import { Crown, Gem, Sword, User2, Check, X } from "lucide-react"
-import { EMAIL_CONFIG } from "@/config"
 import { ROLES } from "@/lib/permissions"
 import { useEffect, useState } from "react"
 import { useLocale } from "next-intl"

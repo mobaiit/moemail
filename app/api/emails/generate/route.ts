@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { nanoid } from "nanoid"
 import { createDb } from "@/lib/db"
-import { emails, userRoles, roles } from "@/lib/schema"
+import { emails } from "@/lib/schema"
 import { eq, and, gt, sql, count, isNull } from "drizzle-orm"
 import { EXPIRY_OPTIONS } from "@/types/email"
 import { EMAIL_CONFIG, RoleName } from "@/config"

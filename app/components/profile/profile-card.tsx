@@ -62,8 +62,6 @@ export function ProfileCard({ user }: ProfileCardProps) {
 
   const canManageWebhook = checkPermission(PERMISSIONS.MANAGE_WEBHOOK)
   const canManageApiKey = checkPermission(PERMISSIONS.MANAGE_API_KEY)
-  const canPromote = checkPermission(PERMISSIONS.PROMOTE_USER)
-  const canManageConfig = checkPermission(PERMISSIONS.MANAGE_CONFIG)
   const isEmperor = role === ROLES.EMPEROR
 
   // 账号设置 tab 是否有内容
