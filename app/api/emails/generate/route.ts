@@ -2,9 +2,9 @@ import { NextResponse } from "next/server"
 import { nanoid } from "nanoid"
 import { createDb } from "@/lib/db"
 import { emails } from "@/lib/schema"
-import { eq, and, gt, sql } from "drizzle-orm"
+import { eq, and, gt, sql, count } from "drizzle-orm"
 import { EXPIRY_OPTIONS } from "@/types/email"
-import { EMAIL_CONFIG } from "@/config"
+import { EMAIL_CONFIG, RoleName } from "@/config"
 import { getRequestContext } from "@cloudflare/next-on-pages"
 import { getUserId } from "@/lib/apiKey"
 import { getUserRole } from "@/lib/auth"
@@ -12,94 +12,116 @@ import { ROLES } from "@/lib/permissions"
 
 export const runtime = "edge"
 
+const PERMANENT_EXPIRES = new Date('9999-01-01T00:00:00.000Z')
+
 export async function POST(request: Request) {
   const db = createDb()
   const env = getRequestContext().env
 
   const userId = await getUserId()
-  const userRole = await getUserRole(userId!)
+  if (!userId) {
+    return NextResponse.json({ error: "未授权" }, { status: 401 })
+  }
+
+  const userRole = await getUserRole(userId) as RoleName
+  const roleLimits = EMAIL_CONFIG.ROLE_LIMITS[userRole] ?? EMAIL_CONFIG.ROLE_LIMITS.civilian
 
   try {
-    if (userRole !== ROLES.EMPEROR) {
-      const maxEmails = await env.SITE_CONFIG.get("MAX_EMAILS") || EMAIL_CONFIG.MAX_ACTIVE_EMAILS.toString()
-      const activeEmailsCount = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(emails)
-        .where(
-          and(
-            eq(emails.userId, userId!),
-            gt(emails.expiresAt, new Date())
-          )
-        )
-      
-      if (Number(activeEmailsCount[0].count) >= Number(maxEmails)) {
-        return NextResponse.json(
-          { error: `已达到最大邮箱数量限制 (${maxEmails})` },
-          { status: 403 }
-        )
-      }
-    }
-
-    const { name, expiryTime, domain } = await request.json<{ 
+    const { name, expiryTime, domain } = await request.json<{
       name: string
       expiryTime: number
       domain: string
     }>()
 
     if (!EXPIRY_OPTIONS.some(option => option.value === expiryTime)) {
+      return NextResponse.json({ error: "无效的过期时间" }, { status: 400 })
+    }
+
+    const isPermanent = expiryTime === 0
+
+    // 1. 检查是否允许创建永久邮箱
+    if (isPermanent && !roleLimits.allowPermanentEmail) {
       return NextResponse.json(
-        { error: "无效的过期时间" },
-        { status: 400 }
+        { error: "您的角色不允许创建永久邮箱" },
+        { status: 403 }
       )
     }
 
+    // 2. 检查活跃邮箱总数（皇帝不限制）
+    if (userRole !== ROLES.EMPEROR && roleLimits.maxEmails > 0) {
+      const [activeCount] = await db
+        .select({ count: count() })
+        .from(emails)
+        .where(and(
+          eq(emails.userId, userId),
+          gt(emails.expiresAt, new Date())
+        ))
+
+      if (Number(activeCount.count) >= roleLimits.maxEmails) {
+        return NextResponse.json(
+          { error: `已达到邮箱数量上限（${roleLimits.maxEmails} 个）` },
+          { status: 403 }
+        )
+      }
+    }
+
+    // 3. 检查永久邮箱数量上限（皇帝不限制）
+    if (isPermanent && userRole !== ROLES.EMPEROR && roleLimits.maxPermanentEmails > 0) {
+      const [permanentCount] = await db
+        .select({ count: count() })
+        .from(emails)
+        .where(and(
+          eq(emails.userId, userId),
+          eq(emails.expiresAt, PERMANENT_EXPIRES)
+        ))
+
+      if (Number(permanentCount.count) >= roleLimits.maxPermanentEmails) {
+        return NextResponse.json(
+          { error: `已达到永久邮箱数量上限（${roleLimits.maxPermanentEmails} 个）` },
+          { status: 403 }
+        )
+      }
+    }
+
+    // 4. 校验域名
     const domainString = await env.SITE_CONFIG.get("EMAIL_DOMAINS")
     const domains = domainString ? domainString.split(',') : ["moemail.app"]
 
-    if (!domains || !domains.includes(domain)) {
-      return NextResponse.json(
-        { error: "无效的域名" },
-        { status: 400 }
-      )
+    if (!domains.includes(domain)) {
+      return NextResponse.json({ error: "无效的域名" }, { status: 400 })
     }
 
+    // 5. 检查地址是否已存在
     const address = `${name || nanoid(8)}@${domain}`
     const existingEmail = await db.query.emails.findFirst({
       where: eq(sql`LOWER(${emails.address})`, address.toLowerCase())
     })
 
     if (existingEmail) {
-      return NextResponse.json(
-        { error: "该邮箱地址已被使用" },
-        { status: 409 }
-      )
+      return NextResponse.json({ error: "该邮箱地址已被使用" }, { status: 409 })
     }
 
+    // 6. 创建邮箱
     const now = new Date()
-    const expires = expiryTime === 0 
-      ? new Date('9999-01-01T00:00:00.000Z')
+    const expiresAt = isPermanent
+      ? PERMANENT_EXPIRES
       : new Date(now.getTime() + expiryTime)
-    
-    const emailData: typeof emails.$inferInsert = {
-      address,
-      createdAt: now,
-      expiresAt: expires,
-      userId: userId!
-    }
-    
+
     const result = await db.insert(emails)
-      .values(emailData)
+      .values({
+        address,
+        createdAt: now,
+        expiresAt,
+        userId,
+      })
       .returning({ id: emails.id, address: emails.address })
-    
-    return NextResponse.json({ 
+
+    return NextResponse.json({
       id: result[0].id,
-      email: result[0].address 
+      email: result[0].address,
     })
   } catch (error) {
     console.error('Failed to generate email:', error)
-    return NextResponse.json(
-      { error: "创建邮箱失败" },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: "创建邮箱失败" }, { status: 500 })
   }
-} 
+}

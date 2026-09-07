@@ -15,7 +15,9 @@ import { EXPIRY_OPTIONS } from "@/types/email"
 import { useCopy } from "@/hooks/use-copy"
 import { useConfig } from "@/hooks/use-config"
 import { useRolePermission } from "@/hooks/use-role-permission"
-import { PERMISSIONS } from "@/lib/permissions"
+import { useUserRole } from "@/hooks/use-user-role"
+import { PERMISSIONS, ROLES } from "@/lib/permissions"
+import { EMAIL_CONFIG, RoleName } from "@/config"
 
 interface CreateDialogProps {
   onEmailCreated: () => void
@@ -24,6 +26,7 @@ interface CreateDialogProps {
 export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
   const { config } = useConfig()
   const { checkPermission } = useRolePermission()
+  const { role } = useUserRole()
   const t = useTranslations("emails.create")
   const tList = useTranslations("emails.list")
   const tCommon = useTranslations("common.actions")
@@ -35,6 +38,24 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
   const [expiryTime, setExpiryTime] = useState(EXPIRY_OPTIONS[1].value.toString())
   const { toast } = useToast()
   const { copyToClipboard } = useCopy()
+
+  // 当前角色的限制配置
+  const roleName = (role ?? "civilian") as RoleName
+  const roleLimits = EMAIL_CONFIG.ROLE_LIMITS[roleName] ?? EMAIL_CONFIG.ROLE_LIMITS.civilian
+  const isEmperor = role === ROLES.EMPEROR
+
+  // 过滤有权限使用的到期选项：平民过滤掉永久
+  const availableExpiryOptions = EXPIRY_OPTIONS.filter(opt => {
+    if (opt.value === 0) return roleLimits.allowPermanentEmail
+    return true
+  })
+
+  // 如果当前选中的是永久，但角色不允许，重置为 24h
+  useEffect(() => {
+    if (expiryTime === "0" && !roleLimits.allowPermanentEmail) {
+      setExpiryTime(EXPIRY_OPTIONS[1].value.toString())
+    }
+  }, [role, expiryTime, roleLimits.allowPermanentEmail])
 
   const handleOpenChange = (val: boolean) => {
     if (val && !checkPermission(PERMISSIONS.MANAGE_EMAIL)) {
@@ -59,7 +80,7 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
       toast({
         title: tList("error"),
         description: t("namePlaceholder"),
-        variant: "destructive"
+        variant: "destructive",
       })
       return
     }
@@ -72,24 +93,21 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
         body: JSON.stringify({
           name: emailName,
           domain: currentDomain,
-          expiryTime: parseInt(expiryTime)
-        })
+          expiryTime: parseInt(expiryTime),
+        }),
       })
 
       if (!response.ok) {
-        const data = await response.json()
+        const data = await response.json() as { error: string }
         toast({
           title: tList("error"),
-          description: (data as { error: string }).error,
-          variant: "destructive"
+          description: data.error,
+          variant: "destructive",
         })
         return
       }
 
-      toast({
-        title: tList("success"),
-        description: t("success")
-      })
+      toast({ title: tList("success"), description: t("success") })
       onEmailCreated()
       setOpen(false)
       setEmailName("")
@@ -97,7 +115,7 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
       toast({
         title: tList("error"),
         description: t("failed"),
-        variant: "destructive"
+        variant: "destructive",
       })
     } finally {
       setLoading(false)
@@ -157,21 +175,32 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
             <RadioGroup
               value={expiryTime}
               onValueChange={setExpiryTime}
-              className="flex gap-6"
+              className="flex gap-6 flex-wrap"
             >
-              {EXPIRY_OPTIONS.map((option, index) => {
+              {availableExpiryOptions.map((option, index) => {
                 const labels = [t("oneHour"), t("oneDay"), t("threeDays"), t("permanent")]
+                // 找到在原始列表中的 index 以对应标签
+                const originalIndex = EXPIRY_OPTIONS.findIndex(o => o.value === option.value)
                 return (
                   <div key={option.value} className="flex items-center gap-2">
-                    <RadioGroupItem value={option.value.toString()} id={option.value.toString()} />
-                    <Label htmlFor={option.value.toString()} className="cursor-pointer text-sm">
-                      {labels[index]}
+                    <RadioGroupItem value={option.value.toString()} id={`expiry-${option.value}`} />
+                    <Label htmlFor={`expiry-${option.value}`} className="cursor-pointer text-sm">
+                      {labels[originalIndex]}
                     </Label>
                   </div>
                 )
               })}
             </RadioGroup>
           </div>
+
+          {/* 角色限制说明 */}
+          {!isEmperor && (
+            <p className="text-xs text-muted-foreground">
+              {roleName === ROLES.CIVILIAN && `当前角色（平民）：最多 ${roleLimits.maxEmails} 个邮箱，不支持永久邮箱`}
+              {roleName === ROLES.KNIGHT && `当前角色（骑士）：最多 ${roleLimits.maxEmails} 个邮箱，永久邮箱最多 ${roleLimits.maxPermanentEmails} 个`}
+              {roleName === ROLES.DUKE && `当前角色（公爵）：最多 ${roleLimits.maxEmails} 个邮箱，永久邮箱最多 ${roleLimits.maxPermanentEmails} 个`}
+            </p>
+          )}
 
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="shrink-0">{t("domain")}:</span>
@@ -201,4 +230,4 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
       </DialogContent>
     </Dialog>
   )
-} 
+}
