@@ -177,9 +177,8 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
               onValueChange={setExpiryTime}
               className="flex gap-6 flex-wrap"
             >
-              {availableExpiryOptions.map((option, index) => {
+              {availableExpiryOptions.map((option) => {
                 const labels = [t("oneHour"), t("oneDay"), t("threeDays"), t("permanent")]
-                // 找到在原始列表中的 index 以对应标签
                 const originalIndex = EXPIRY_OPTIONS.findIndex(o => o.value === option.value)
                 return (
                   <div key={option.value} className="flex items-center gap-2">
