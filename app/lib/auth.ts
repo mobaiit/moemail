@@ -213,6 +213,7 @@ export const {
             userId: session.user.id,
             roleId: role.id,
             createdAt: new Date(),
+            expiresAt: null,
             role: role
           }]
         }
