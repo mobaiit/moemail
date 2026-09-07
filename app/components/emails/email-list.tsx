@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { ROLES } from "@/lib/permissions"
 import { useUserRole } from "@/hooks/use-user-role"
-import { EMAIL_CONFIG, RoleName } from "@/config"
+import { useConfig } from "@/hooks/use-config"
 
 interface Email {
   id: string
@@ -58,11 +58,15 @@ function formatRemainingTime(ms: number): string {
 export function EmailList({ onEmailSelect, selectedEmailId }: EmailListProps) {
   const { data: session } = useSession()
   const { role } = useUserRole()
+  const { config } = useConfig()
   const t = useTranslations("emails.list")
   const tCommon = useTranslations("common.actions")
 
-  const roleName = (role ?? "civilian") as RoleName
-  const roleMaxEmails = EMAIL_CONFIG.ROLE_LIMITS[roleName]?.maxEmails ?? 1
+  const roleName = role ?? "civilian"
+  const roleLimits = config?.roleLimits
+  const roleMaxEmails = roleLimits
+    ? (roleLimits[roleName as keyof typeof roleLimits]?.maxEmails ?? 1)
+    : 1
   const needCooldown = role === ROLES.CIVILIAN || role === ROLES.KNIGHT
 
   const [emailList, setEmailList] = useState<Email[]>([])

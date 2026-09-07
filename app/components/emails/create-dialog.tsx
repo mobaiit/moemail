@@ -17,7 +17,6 @@ import { useConfig } from "@/hooks/use-config"
 import { useRolePermission } from "@/hooks/use-role-permission"
 import { useUserRole } from "@/hooks/use-user-role"
 import { PERMISSIONS, ROLES } from "@/lib/permissions"
-import { EMAIL_CONFIG, RoleName } from "@/config"
 
 interface CreateDialogProps {
   onEmailCreated: () => void
@@ -39,9 +38,10 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
   const { toast } = useToast()
   const { copyToClipboard } = useCopy()
 
-  // 当前角色的限制配置
-  const roleName = (role ?? "civilian") as RoleName
-  const roleLimits = EMAIL_CONFIG.ROLE_LIMITS[roleName] ?? EMAIL_CONFIG.ROLE_LIMITS.civilian
+  // 当前角色的限制配置（从 useConfig 读，已含 KV 覆盖）
+  const roleName = role ?? "civilian"
+  const roleLimits = config?.roleLimits?.[roleName as keyof typeof config.roleLimits]
+    ?? { maxEmails: 1, maxPermanentEmails: 0, dailySendLimit: -1, allowPermanentEmail: false }
   const isEmperor = role === ROLES.EMPEROR
 
   // 过滤有权限使用的到期选项：平民过滤掉永久

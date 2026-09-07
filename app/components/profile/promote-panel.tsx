@@ -350,7 +350,7 @@ export function PromotePanel() {
               disabled={!!deletingUserId}
               onClick={() => userToDelete && handleDelete(userToDelete)}
             >
-              {deletingUserId ? <Loader2 className="w-4 h-4 animate-spin" /> : t("delete")}
+              {deletingUserId ? <Loader2 className="w-4 h-4 animate-spin" /> : t("deleteConfirmButton")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
