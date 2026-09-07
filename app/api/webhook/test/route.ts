@@ -1,4 +1,4 @@
-import { callWebhook } from "@/lib/webhook"
+import { callWebhook, WebhookType } from "@/lib/webhook"
 import { WEBHOOK_CONFIG } from "@/config"
 import { z } from "zod"
 import { EmailMessage } from "@/lib/webhook"
@@ -6,27 +6,32 @@ import { EmailMessage } from "@/lib/webhook"
 export const runtime = "edge"
 
 const testSchema = z.object({
-  url: z.string().url()
+  url: z.string().url(),
+  type: z.enum(["custom", "wecom", "dingtalk"]).default("custom"),
 })
 
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { url } = testSchema.parse(body)
+    const { url, type } = testSchema.parse(body)
 
-    await callWebhook(url, {
-      event: WEBHOOK_CONFIG.EVENTS.NEW_MESSAGE,
-      data: {
-        emailId: "123456789",
-        messageId: '987654321',
-        fromAddress: "sender@example.com",
-        subject: "Test Email",
-        content: "This is a test email.",
-        html: "<p>This is a <strong>test</strong> email.</p>",
-        receivedAt: "2023-03-01T12:00:00Z",
-        toAddress: "recipient@example.com"
-      } as EmailMessage
-    })
+    await callWebhook(
+      url,
+      {
+        event: WEBHOOK_CONFIG.EVENTS.NEW_MESSAGE,
+        data: {
+          emailId: "123456789",
+          messageId: "987654321",
+          fromAddress: "sender@example.com",
+          subject: "Test Email",
+          content: "This is a test email.",
+          html: "<p>This is a <strong>test</strong> email.</p>",
+          receivedAt: new Date().toISOString(),
+          toAddress: "recipient@example.com",
+        } as EmailMessage,
+      },
+      type as WebhookType
+    )
 
     return Response.json({ success: true })
   } catch (error) {
@@ -36,4 +41,4 @@ export async function POST(request: Request) {
       { status: 400 }
     )
   }
-} 
+}

@@ -8,7 +8,8 @@ export const runtime = "edge"
 
 const webhookSchema = z.object({
   url: z.string().url(),
-  enabled: z.boolean()
+  enabled: z.boolean(),
+  type: z.enum(["custom", "wecom", "dingtalk"]).default("custom"),
 })
 
 export async function GET() {
@@ -19,7 +20,7 @@ export async function GET() {
     where: eq(webhooks.userId, session!.user!.id!)
   })
 
-  return Response.json(webhook || { enabled: false, url: "" })
+  return Response.json(webhook || { enabled: false, url: "", type: "custom" })
 }
 
 export async function POST(request: Request) {
@@ -30,8 +31,8 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    const { url, enabled } = webhookSchema.parse(body)
-    
+    const { url, enabled, type } = webhookSchema.parse(body)
+
     const db = createDb()
     const now = new Date()
 
@@ -42,20 +43,12 @@ export async function POST(request: Request) {
     if (existingWebhook) {
       await db
         .update(webhooks)
-        .set({
-          url,
-          enabled,
-          updatedAt: now
-        })
+        .set({ url, enabled, type, updatedAt: now })
         .where(eq(webhooks.userId, session.user.id))
     } else {
       await db
         .insert(webhooks)
-        .values({
-          userId: session.user.id,
-          url,
-          enabled,
-        })
+        .values({ userId: session.user.id, url, enabled, type })
     }
 
     return Response.json({ success: true })
@@ -66,4 +59,4 @@ export async function POST(request: Request) {
       { status: 400 }
     )
   }
-} 
+}

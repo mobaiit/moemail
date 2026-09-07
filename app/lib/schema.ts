@@ -81,6 +81,7 @@ export const webhooks = sqliteTable('webhook', {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   url: text('url').notNull(),
+  type: text('type').notNull().default('custom'), // custom | wecom | dingtalk
   enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
   createdAt: integer('created_at', { mode: 'timestamp_ms' })
     .notNull()

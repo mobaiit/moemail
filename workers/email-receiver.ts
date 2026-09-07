@@ -4,7 +4,7 @@ import { messages, emails, webhooks } from '../app/lib/schema'
 import { eq, sql } from 'drizzle-orm'
 import PostalMime from 'postal-mime'
 import { WEBHOOK_CONFIG } from '../app/config/webhook'
-import { EmailMessage } from '../app/lib/webhook'
+import { callWebhook, EmailMessage, WebhookType } from '../app/lib/webhook'
 
 const handleEmail = async (message: ForwardableEmailMessage, env: Env) => {
   const db = drizzle(env.DB, { schema: { messages, emails, webhooks } })
@@ -38,23 +38,23 @@ const handleEmail = async (message: ForwardableEmailMessage, env: Env) => {
 
     if (webhook?.enabled) {
       try {
-        await fetch(webhook.url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Webhook-Event': WEBHOOK_CONFIG.EVENTS.NEW_MESSAGE
+        await callWebhook(
+          webhook.url,
+          {
+            event: WEBHOOK_CONFIG.EVENTS.NEW_MESSAGE,
+            data: {
+              emailId: targetEmail.id,
+              messageId: savedMessage.id,
+              fromAddress: savedMessage.fromAddress,
+              subject: savedMessage.subject,
+              content: savedMessage.content,
+              html: savedMessage.html,
+              receivedAt: savedMessage.receivedAt.toISOString(),
+              toAddress: targetEmail.address
+            } as EmailMessage
           },
-          body: JSON.stringify({
-            emailId: targetEmail.id,
-            messageId: savedMessage.id,
-            fromAddress: savedMessage.fromAddress,
-            subject: savedMessage.subject,
-            content: savedMessage.content,
-            html: savedMessage.html,
-            receivedAt: savedMessage.receivedAt.toISOString(),
-            toAddress: targetEmail.address
-          } as EmailMessage)
-        })
+          (webhook.type as WebhookType) || 'custom'
+        )
       } catch (error) {
         console.error('Failed to send webhook:', error)
       }
@@ -72,4 +72,4 @@ const worker = {
   }
 }
 
-export default worker 
+export default worker

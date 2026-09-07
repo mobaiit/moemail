@@ -15,14 +15,28 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import type { WebhookType } from "@/lib/webhook"
+
+const WEBHOOK_TYPES: { value: WebhookType; label: string; desc: string }[] = [
+  { value: "custom",   label: "自定义",     desc: "发送原始 JSON，适合自建服务" },
+  { value: "wecom",    label: "企业微信",   desc: "企业微信群机器人 Webhook" },
+  { value: "dingtalk", label: "钉钉",       desc: "钉钉群自定义机器人 Webhook" },
+]
 
 export function WebhookConfig() {
   const t = useTranslations("profile.webhook")
   const tCommon = useTranslations("common.actions")
   const tMessages = useTranslations("emails.messages")
-  const tApiKey = useTranslations("profile.apiKey")
   const [enabled, setEnabled] = useState(false)
   const [url, setUrl] = useState("")
+  const [type, setType] = useState<WebhookType>("custom")
   const [loading, setLoading] = useState(false)
   const [testing, setTesting] = useState(false)
   const [showDocs, setShowDocs] = useState(false)
@@ -31,10 +45,11 @@ export function WebhookConfig() {
 
   useEffect(() => {
     fetch("/api/webhook")
-      .then(res => res.json() as Promise<{ enabled: boolean; url: string }>)
+      .then(res => res.json() as Promise<{ enabled: boolean; url: string; type?: WebhookType }>)
       .then(data => {
         setEnabled(data.enabled)
         setUrl(data.url)
+        setType(data.type || "custom")
       })
       .catch(console.error)
       .finally(() => setInitialLoading(false))
@@ -46,9 +61,7 @@ export function WebhookConfig() {
         <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
           <Loader2 className="w-6 h-6 text-primary animate-spin" />
         </div>
-        <div>
-          <p className="text-sm text-muted-foreground">{tMessages("loading")}</p>
-        </div>
+        <p className="text-sm text-muted-foreground mt-2">{tMessages("loading")}</p>
       </div>
     )
   }
@@ -62,21 +75,14 @@ export function WebhookConfig() {
       const res = await fetch("/api/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, enabled })
+        body: JSON.stringify({ url, enabled, type })
       })
 
       if (!res.ok) throw new Error(t("saveFailed"))
 
-      toast({
-        title: t("saveSuccess"),
-        description: t("saveSuccess")
-      })
+      toast({ title: t("saveSuccess"), description: t("saveSuccess") })
     } catch (_error) {
-      toast({
-        title: t("saveFailed"),
-        description: t("saveFailed"),
-        variant: "destructive"
-      })
+      toast({ title: t("saveFailed"), description: t("saveFailed"), variant: "destructive" })
     } finally {
       setLoading(false)
     }
@@ -90,60 +96,74 @@ export function WebhookConfig() {
       const res = await fetch("/api/webhook/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url })
+        body: JSON.stringify({ url, type })
       })
 
       if (!res.ok) throw new Error(t("testFailed"))
 
-      toast({
-        title: t("testSuccess"),
-        description: t("testSuccess")
-      })
+      toast({ title: t("testSuccess"), description: t("testSuccess") })
     } catch (_error) {
-      toast({
-        title: t("testFailed"),
-        description: t("testFailed"),
-        variant: "destructive"
-      })
+      toast({ title: t("testFailed"), description: t("testFailed"), variant: "destructive" })
     } finally {
       setTesting(false)
     }
   }
+
+  const currentTypeInfo = WEBHOOK_TYPES.find(t => t.value === type)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
           <Label>{t("enable")}</Label>
-          <div className="text-sm text-muted-foreground">
-            {t("description")}
-          </div>
+          <div className="text-sm text-muted-foreground">{t("description")}</div>
         </div>
-        <Switch
-          checked={enabled}
-          onCheckedChange={setEnabled}
-        />
+        <Switch checked={enabled} onCheckedChange={setEnabled} />
       </div>
 
       {enabled && (
         <div className="space-y-4">
+          {/* 类型选择 */}
+          <div className="space-y-2">
+            <Label>Webhook 类型</Label>
+            <Select value={type} onValueChange={(v) => setType(v as WebhookType)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {WEBHOOK_TYPES.map(item => (
+                  <SelectItem key={item.value} value={item.value}>
+                    <span className="font-medium">{item.label}</span>
+                    <span className="text-muted-foreground text-xs ml-2">{item.desc}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {currentTypeInfo && (
+              <p className="text-xs text-muted-foreground">{currentTypeInfo.desc}</p>
+            )}
+          </div>
+
+          {/* URL 输入 */}
           <div className="space-y-2">
             <Label htmlFor="webhook-url">{t("url")}</Label>
             <div className="flex gap-2">
               <Input
                 id="webhook-url"
-                placeholder={t("urlPlaceholder")}
+                placeholder={
+                  type === "wecom"
+                    ? "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=..."
+                    : type === "dingtalk"
+                    ? "https://oapi.dingtalk.com/robot/send?access_token=..."
+                    : t("urlPlaceholder")
+                }
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 type="url"
                 required
               />
               <Button type="submit" disabled={loading} className="flex-shrink-0">
-                {loading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  tCommon("save")
-                )}
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : tCommon("save")}
               </Button>
               <TooltipProvider>
                 <Tooltip>
@@ -154,45 +174,38 @@ export function WebhookConfig() {
                       onClick={handleTest}
                       disabled={testing || !url}
                     >
-                      {testing ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Send className="w-4 h-4" />
-                      )}
+                      {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{t("test")}</p>
-                  </TooltipContent>
+                  <TooltipContent><p>{t("test")}</p></TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {t("description2")}
-            </p>
+            <p className="text-xs text-muted-foreground">{t("description2")}</p>
           </div>
 
-          <div className="space-y-2">
-            <button
-              type="button"
-              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              onClick={() => setShowDocs(!showDocs)}
-            >
-              {showDocs ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              {t("description3")}
-            </button>
+          {/* 文档展示（仅自定义类型） */}
+          {type === "custom" && (
+            <div className="space-y-2">
+              <button
+                type="button"
+                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setShowDocs(!showDocs)}
+              >
+                {showDocs ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                {t("description3")}
+              </button>
 
-            {showDocs && (
-              <div className="rounded-md bg-muted p-4 text-sm space-y-3">
-                <p>{t("docs.intro")}</p>
-                <pre className="bg-background p-2 rounded text-xs">
-                  Content-Type: application/json{'\n'}
-                  X-Webhook-Event: new_message
-                </pre>
-
-                <p>{t("docs.exampleBody")}</p>
-                <pre className="bg-background p-2 rounded text-xs overflow-auto">
-                  {`{
+              {showDocs && (
+                <div className="rounded-md bg-muted p-4 text-sm space-y-3">
+                  <p>{t("docs.intro")}</p>
+                  <pre className="bg-background p-2 rounded text-xs">
+                    Content-Type: application/json{'\n'}
+                    X-Webhook-Event: new_message
+                  </pre>
+                  <p>{t("docs.exampleBody")}</p>
+                  <pre className="bg-background p-2 rounded text-xs overflow-auto">
+                    {`{
   "emailId": "email-uuid",
   "messageId": "message-uuid",
   "fromAddress": "sender@example.com",
@@ -200,14 +213,39 @@ export function WebhookConfig() {
   "content": "${t("docs.content")}",
   "html": "${t("docs.html")}",
   "receivedAt": "2024-01-01T12:00:00.000Z",
-  "toAddress": "your-email@${window.location.host}"
+  "toAddress": "your-email@${typeof window !== "undefined" ? window.location.host : "example.com"}"
 }`}
-                </pre>
-              </div>
-            )}
-          </div>
+                  </pre>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 企微/钉钉说明 */}
+          {type === "wecom" && (
+            <div className="rounded-md bg-muted p-4 text-sm space-y-2">
+              <p className="font-medium">企业微信机器人配置</p>
+              <ol className="list-decimal list-inside space-y-1 text-muted-foreground text-xs">
+                <li>在企业微信群中添加「群机器人」</li>
+                <li>复制机器人的 Webhook 地址填入上方</li>
+                <li>收到邮件后将以 Markdown 格式推送到群</li>
+              </ol>
+            </div>
+          )}
+
+          {type === "dingtalk" && (
+            <div className="rounded-md bg-muted p-4 text-sm space-y-2">
+              <p className="font-medium">钉钉机器人配置</p>
+              <ol className="list-decimal list-inside space-y-1 text-muted-foreground text-xs">
+                <li>在钉钉群中添加「自定义（Webhook）」机器人</li>
+                <li>安全设置选择「自定义关键词」，填入「邮件」</li>
+                <li>复制 Webhook 地址填入上方</li>
+                <li>收到邮件后将以 Markdown 格式推送到群</li>
+              </ol>
+            </div>
+          )}
         </div>
       )}
     </form>
   )
-} 
+}
