@@ -25,9 +25,9 @@ import {
 import type { WebhookType } from "@/lib/webhook"
 
 const WEBHOOK_TYPES: { value: WebhookType; label: string; desc: string }[] = [
-  { value: "custom",   label: "自定义",     desc: "发送原始 JSON，适合自建服务" },
-  { value: "wecom",    label: "企业微信",   desc: "企业微信群机器人 Webhook" },
-  { value: "dingtalk", label: "钉钉",       desc: "钉钉群自定义机器人 Webhook" },
+  { value: "custom",   label: "自定义",   desc: "发送原始 JSON，适合自建服务" },
+  { value: "wecom",    label: "企业微信", desc: "企业微信群机器人 Webhook" },
+  { value: "dingtalk", label: "钉钉",     desc: "钉钉群自定义机器人 Webhook" },
 ]
 
 export function WebhookConfig() {
@@ -55,38 +55,19 @@ export function WebhookConfig() {
       .finally(() => setInitialLoading(false))
   }, [])
 
-  if (initialLoading) {
-    return (
-      <div className="text-center">
-        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-          <Loader2 className="w-6 h-6 text-primary animate-spin" />
-        </div>
-        <p className="text-sm text-muted-foreground mt-2">{tMessages("loading")}</p>
-      </div>
-    )
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!url) return
-    await saveWebhook()
-  }
-
   const saveWebhook = async (overrides?: Partial<{ enabled: boolean; url: string; type: WebhookType }>) => {
     const payload = {
       url: overrides?.url ?? url,
       enabled: overrides?.enabled ?? enabled,
       type: overrides?.type ?? type,
     }
-    // 关闭时不需要 url
     if (!payload.url && payload.enabled) return
-
     setLoading(true)
     try {
       const res = await fetch("/api/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       })
       if (!res.ok) throw new Error(t("saveFailed"))
       toast({ title: t("saveSuccess"), description: t("saveSuccess") })
@@ -103,19 +84,22 @@ export function WebhookConfig() {
     await saveWebhook({ enabled: val })
   }
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!url) return
+    await saveWebhook()
+  }
+
   const handleTest = async () => {
     if (!url) return
-
     setTesting(true)
     try {
       const res = await fetch("/api/webhook/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, type })
+        body: JSON.stringify({ url, type }),
       })
-
       if (!res.ok) throw new Error(t("testFailed"))
-
       toast({ title: t("testSuccess"), description: t("testSuccess") })
     } catch (_error) {
       toast({ title: t("testFailed"), description: t("testFailed"), variant: "destructive" })
@@ -124,10 +108,22 @@ export function WebhookConfig() {
     }
   }
 
-  const currentTypeInfo = WEBHOOK_TYPES.find(t => t.value === type)
+  const currentTypeInfo = WEBHOOK_TYPES.find(item => item.value === type)
+
+  if (initialLoading) {
+    return (
+      <div className="text-center">
+        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+          <Loader2 className="w-6 h-6 text-primary animate-spin" />
+        </div>
+        <p className="text-sm text-muted-foreground mt-2">{tMessages("loading")}</p>
+      </div>
+    )
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* 启用开关 */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
           <Label>{t("enable")}</Label>
@@ -136,8 +132,9 @@ export function WebhookConfig() {
         <Switch checked={enabled} onCheckedChange={handleToggle} />
       </div>
 
-      {/* 始终显示配置区域，关闭时灰显 */}
-      <div className={`space-y-4 ${!enabled ? "opacity-50 pointer-events-none" : ""}`}>
+      {/* 配置区域：关闭时灰显保留内容 */}
+      <div className={!enabled ? "opacity-50 pointer-events-none" : ""}>
+        <div className="space-y-4">
           {/* 类型选择 */}
           <div className="space-y-2">
             <Label>Webhook 类型</Label>
@@ -199,7 +196,7 @@ export function WebhookConfig() {
             <p className="text-xs text-muted-foreground">{t("description2")}</p>
           </div>
 
-          {/* 文档展示（仅自定义类型） */}
+          {/* 文档（仅自定义） */}
           {type === "custom" && (
             <div className="space-y-2">
               <button
@@ -210,12 +207,11 @@ export function WebhookConfig() {
                 {showDocs ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 {t("description3")}
               </button>
-
               {showDocs && (
                 <div className="rounded-md bg-muted p-4 text-sm space-y-3">
                   <p>{t("docs.intro")}</p>
                   <pre className="bg-background p-2 rounded text-xs">
-                    Content-Type: application/json{'\n'}
+                    Content-Type: application/json{"\n"}
                     X-Webhook-Event: new_message
                   </pre>
                   <p>{t("docs.exampleBody")}</p>
@@ -228,7 +224,7 @@ export function WebhookConfig() {
   "content": "${t("docs.content")}",
   "html": "${t("docs.html")}",
   "receivedAt": "2024-01-01T12:00:00.000Z",
-  "toAddress": "your-email@${typeof window !== "undefined" ? window.location.host : "example.com"}"
+  "toAddress": "your-email@example.com"
 }`}
                   </pre>
                 </div>
@@ -236,7 +232,7 @@ export function WebhookConfig() {
             </div>
           )}
 
-          {/* 企微/钉钉说明 */}
+          {/* 企微说明 */}
           {type === "wecom" && (
             <div className="rounded-md bg-muted p-4 text-sm space-y-2">
               <p className="font-medium">企业微信机器人配置</p>
@@ -248,6 +244,7 @@ export function WebhookConfig() {
             </div>
           )}
 
+          {/* 钉钉说明 */}
           {type === "dingtalk" && (
             <div className="rounded-md bg-muted p-4 text-sm space-y-2">
               <p className="font-medium">钉钉机器人配置</p>
