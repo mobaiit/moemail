@@ -76,7 +76,7 @@ export async function generateMetadata({
       url: `${baseUrl}/${locale}`,
       title: t("title"),
       description: t("description"),
-      siteName: "MoeMail",
+      siteName: "WinkMail",
     },
     twitter: {
       card: "summary_large_image",
@@ -124,10 +124,10 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} suppressHydrationWarning data-style={siteStyle === "default" ? undefined : siteStyle}>
       <head>
-        <meta name="application-name" content="MoeMail" />
+        <meta name="application-name" content="WinkMail" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="MoeMail" />
+        <meta name="apple-mobile-web-app-title" content="WinkMail" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
