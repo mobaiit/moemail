@@ -69,23 +69,38 @@ export function WebhookConfig() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!url) return
+    await saveWebhook()
+  }
+
+  const saveWebhook = async (overrides?: Partial<{ enabled: boolean; url: string; type: WebhookType }>) => {
+    const payload = {
+      url: overrides?.url ?? url,
+      enabled: overrides?.enabled ?? enabled,
+      type: overrides?.type ?? type,
+    }
+    // 关闭时不需要 url
+    if (!payload.url && payload.enabled) return
 
     setLoading(true)
     try {
       const res = await fetch("/api/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, enabled, type })
+        body: JSON.stringify(payload)
       })
-
       if (!res.ok) throw new Error(t("saveFailed"))
-
       toast({ title: t("saveSuccess"), description: t("saveSuccess") })
     } catch (_error) {
       toast({ title: t("saveFailed"), description: t("saveFailed"), variant: "destructive" })
     } finally {
       setLoading(false)
     }
+  }
+
+  // Switch 切换时立即保存
+  const handleToggle = async (val: boolean) => {
+    setEnabled(val)
+    await saveWebhook({ enabled: val })
   }
 
   const handleTest = async () => {
@@ -118,11 +133,11 @@ export function WebhookConfig() {
           <Label>{t("enable")}</Label>
           <div className="text-sm text-muted-foreground">{t("description")}</div>
         </div>
-        <Switch checked={enabled} onCheckedChange={setEnabled} />
+        <Switch checked={enabled} onCheckedChange={handleToggle} />
       </div>
 
-      {enabled && (
-        <div className="space-y-4">
+      {/* 始终显示配置区域，关闭时灰显 */}
+      <div className={`space-y-4 ${!enabled ? "opacity-50 pointer-events-none" : ""}`}>
           {/* 类型选择 */}
           <div className="space-y-2">
             <Label>Webhook 类型</Label>
@@ -245,7 +260,7 @@ export function WebhookConfig() {
             </div>
           )}
         </div>
-      )}
+      </div>
     </form>
   )
 }
