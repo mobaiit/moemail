@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { EXPIRY_OPTIONS } from "@/types/email"
 import { useCopy } from "@/hooks/use-copy"
 import { useConfig } from "@/hooks/use-config"
+import { useRolePermission } from "@/hooks/use-role-permission"
+import { PERMISSIONS } from "@/lib/permissions"
 
 interface CreateDialogProps {
   onEmailCreated: () => void
@@ -21,9 +23,11 @@ interface CreateDialogProps {
 
 export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
   const { config } = useConfig()
+  const { checkPermission } = useRolePermission()
   const t = useTranslations("emails.create")
   const tList = useTranslations("emails.list")
   const tCommon = useTranslations("common.actions")
+  const tNoPermission = useTranslations("emails.noPermission")
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [emailName, setEmailName] = useState("")
@@ -31,6 +35,18 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
   const [expiryTime, setExpiryTime] = useState(EXPIRY_OPTIONS[1].value.toString())
   const { toast } = useToast()
   const { copyToClipboard } = useCopy()
+
+  const handleOpenChange = (val: boolean) => {
+    if (val && !checkPermission(PERMISSIONS.MANAGE_EMAIL)) {
+      toast({
+        title: tNoPermission("title"),
+        description: tNoPermission("description"),
+        variant: "destructive",
+      })
+      return
+    }
+    setOpen(val)
+  }
 
   const generateRandomName = () => setEmailName(nanoid(8))
 
@@ -95,7 +111,7 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
   }, [config])
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Plus className="w-4 h-4" />
