@@ -4,11 +4,11 @@ import { createDb } from "@/lib/db"
 import { emails } from "@/lib/schema"
 import { eq, and, gt, sql, count, isNull } from "drizzle-orm"
 import { EXPIRY_OPTIONS } from "@/types/email"
-import { EMAIL_CONFIG, RoleName } from "@/config"
 import { getRequestContext } from "@cloudflare/next-on-pages"
 import { getUserId } from "@/lib/apiKey"
 import { getUserRole } from "@/lib/auth"
 import { ROLES } from "@/lib/permissions"
+import { getRoleLimitByName } from "@/lib/role-limits"
 
 export const runtime = "edge"
 
@@ -24,8 +24,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "未授权" }, { status: 401 })
   }
 
-  const userRole = await getUserRole(userId) as RoleName
-  const roleLimits = EMAIL_CONFIG.ROLE_LIMITS[userRole] ?? EMAIL_CONFIG.ROLE_LIMITS.civilian
+  const userRole = await getUserRole(userId)
+  const roleLimits = await getRoleLimitByName(userRole ?? "civilian")
   const needCooldown = userRole === ROLES.CIVILIAN || userRole === ROLES.KNIGHT
 
   try {

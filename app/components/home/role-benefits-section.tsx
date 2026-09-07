@@ -5,6 +5,7 @@ import { ROLES } from "@/lib/permissions"
 import { useEffect, useState } from "react"
 import { useLocale } from "next-intl"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 
 const ROLE_CONFIGS = [
   {
@@ -60,6 +61,11 @@ export function RoleBenefitsSection() {
   const [config, setConfig] = useState<Config>({})
   const locale = useLocale()
   const router = useRouter()
+  const { data: session } = useSession()
+
+  // 公爵和皇帝不显示升级按钮
+  const currentRole = session?.user?.roles?.[0]?.name
+  const hideUpgrade = currentRole === ROLES.DUKE || currentRole === ROLES.EMPEROR
 
   useEffect(() => {
     fetch("/api/config")
@@ -121,8 +127,8 @@ export function RoleBenefitsSection() {
         </table>
       </div>
 
-      {/* 升级按钮 */}
-      {(config.upgradeUrlKnight || config.upgradeUrlDuke) && (
+      {/* 升级按钮：公爵和皇帝不显示 */}
+      {!hideUpgrade && (config.upgradeUrlKnight || config.upgradeUrlDuke) && (
         <div className="flex flex-col sm:flex-row gap-3 mt-5">
           {config.upgradeUrlKnight && (
             <a

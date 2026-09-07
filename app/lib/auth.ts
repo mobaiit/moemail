@@ -132,12 +132,15 @@ export const {
           throw new Error("输入格式不正确")
         }
 
-        const verification = await verifyTurnstileToken(parsedCredentials.turnstileToken)
-        if (!verification.success) {
-          if (verification.reason === "missing-token") {
-            throw new Error("请先完成安全验证")
+        // __skip__ 是注册后自动登录的特殊标记，跳过 Turnstile 验证
+        if (parsedCredentials.turnstileToken !== "__skip__") {
+          const verification = await verifyTurnstileToken(parsedCredentials.turnstileToken)
+          if (!verification.success) {
+            if (verification.reason === "missing-token") {
+              throw new Error("请先完成安全验证")
+            }
+            throw new Error("安全验证未通过")
           }
-          throw new Error("安全验证未通过")
         }
 
         const db = createDb()

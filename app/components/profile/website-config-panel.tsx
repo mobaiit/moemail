@@ -22,16 +22,66 @@ import { STYLES, STYLE_LABELS, type SiteStyle } from "@/lib/style"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 
+interface RoleLimitForm {
+  maxEmails: number
+  maxPermanentEmails: number
+  dailySendLimit: number
+}
+
+const DEFAULT_LIMITS = {
+  civilian: {
+    maxEmails:          EMAIL_CONFIG.ROLE_LIMITS.civilian.maxEmails,
+    maxPermanentEmails: EMAIL_CONFIG.ROLE_LIMITS.civilian.maxPermanentEmails,
+    dailySendLimit:     EMAIL_CONFIG.ROLE_LIMITS.civilian.dailySendLimit,
+  },
+  knight: {
+    maxEmails:          EMAIL_CONFIG.ROLE_LIMITS.knight.maxEmails,
+    maxPermanentEmails: EMAIL_CONFIG.ROLE_LIMITS.knight.maxPermanentEmails,
+    dailySendLimit:     EMAIL_CONFIG.ROLE_LIMITS.knight.dailySendLimit,
+  },
+  duke: {
+    maxEmails:          EMAIL_CONFIG.ROLE_LIMITS.duke.maxEmails,
+    maxPermanentEmails: EMAIL_CONFIG.ROLE_LIMITS.duke.maxPermanentEmails,
+    dailySendLimit:     EMAIL_CONFIG.ROLE_LIMITS.duke.dailySendLimit,
+  },
+}
+
+function RoleLimitRow({
+  label,
+  value,
+  onChange,
+  hint,
+}: {
+  label: string
+  value: number
+  onChange: (v: number) => void
+  hint?: string
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-xs text-muted-foreground w-24 shrink-0">{label}</span>
+      <Input
+        type="number"
+        min="-1"
+        className="h-8 text-sm w-24"
+        value={value}
+        onChange={e => onChange(Number(e.target.value))}
+      />
+      {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
+    </div>
+  )
+}
+
 export function WebsiteConfigPanel() {
   const t = useTranslations("profile.website")
   const tCard = useTranslations("profile.card")
   const [defaultRole, setDefaultRole] = useState<string>("")
   const [emailDomains, setEmailDomains] = useState<string>("")
   const [adminContact, setAdminContact] = useState<string>("")
-  const [maxEmails, setMaxEmails] = useState<string>(EMAIL_CONFIG.MAX_ACTIVE_EMAILS.toString())
   const [siteStyle, setSiteStyle] = useState<SiteStyle>("default")
   const [upgradeUrlKnight, setUpgradeUrlKnight] = useState("")
   const [upgradeUrlDuke, setUpgradeUrlDuke] = useState("")
+  const [roleLimits, setRoleLimits] = useState<typeof DEFAULT_LIMITS>(DEFAULT_LIMITS)
   const [turnstileEnabled, setTurnstileEnabled] = useState(false)
   const [turnstileSiteKey, setTurnstileSiteKey] = useState("")
   const [turnstileSecretKey, setTurnstileSecretKey] = useState("")
@@ -40,39 +90,48 @@ export function WebsiteConfigPanel() {
   const { toast } = useToast()
   const router = useRouter()
 
-
-  useEffect(() => {
-    fetchConfig()
-  }, [])
+  useEffect(() => { fetchConfig() }, [])
 
   const fetchConfig = async () => {
     const res = await fetch("/api/config")
-    if (res.ok) {
-      const data = await res.json() as { 
-        defaultRole: Exclude<Role, typeof ROLES.EMPEROR>,
-        emailDomains: string,
-        adminContact: string,
-        maxEmails: string,
-        siteStyle: string,
-        upgradeUrlKnight?: string,
-        upgradeUrlDuke?: string,
-        turnstile?: {
-          enabled: boolean,
-          siteKey: string,
-          secretKey?: string
-        }
-      }
-      setDefaultRole(data.defaultRole)
-      setEmailDomains(data.emailDomains)
-      setAdminContact(data.adminContact)
-      setMaxEmails(data.maxEmails || EMAIL_CONFIG.MAX_ACTIVE_EMAILS.toString())
-      setSiteStyle((data.siteStyle as SiteStyle) || "default")
-      setUpgradeUrlKnight(data.upgradeUrlKnight ?? "")
-      setUpgradeUrlDuke(data.upgradeUrlDuke ?? "")
-      setTurnstileEnabled(Boolean(data.turnstile?.enabled))
-      setTurnstileSiteKey(data.turnstile?.siteKey ?? "")
-      setTurnstileSecretKey(data.turnstile?.secretKey ?? "")
+    if (!res.ok) return
+    const data = await res.json() as {
+      defaultRole: Exclude<Role, typeof ROLES.EMPEROR>
+      emailDomains: string
+      adminContact: string
+      siteStyle: string
+      upgradeUrlKnight?: string
+      upgradeUrlDuke?: string
+      roleLimits?: typeof DEFAULT_LIMITS
+      turnstile?: { enabled: boolean; siteKey: string; secretKey?: string }
     }
+    setDefaultRole(data.defaultRole)
+    setEmailDomains(data.emailDomains)
+    setAdminContact(data.adminContact)
+    setSiteStyle((data.siteStyle as SiteStyle) || "default")
+    setUpgradeUrlKnight(data.upgradeUrlKnight ?? "")
+    setUpgradeUrlDuke(data.upgradeUrlDuke ?? "")
+    if (data.roleLimits) {
+      setRoleLimits({
+        civilian: { ...DEFAULT_LIMITS.civilian, ...data.roleLimits.civilian },
+        knight:   { ...DEFAULT_LIMITS.knight,   ...data.roleLimits.knight   },
+        duke:     { ...DEFAULT_LIMITS.duke,     ...data.roleLimits.duke     },
+      })
+    }
+    setTurnstileEnabled(Boolean(data.turnstile?.enabled))
+    setTurnstileSiteKey(data.turnstile?.siteKey ?? "")
+    setTurnstileSecretKey(data.turnstile?.secretKey ?? "")
+  }
+
+  const updateLimit = (
+    role: keyof typeof DEFAULT_LIMITS,
+    field: keyof RoleLimitForm,
+    value: number
+  ) => {
+    setRoleLimits(prev => ({
+      ...prev,
+      [role]: { ...prev[role], [field]: value },
+    }))
   }
 
   const handleSave = async () => {
@@ -81,30 +140,25 @@ export function WebsiteConfigPanel() {
       const res = await fetch("/api/config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          defaultRole, 
+        body: JSON.stringify({
+          defaultRole,
           emailDomains,
           adminContact,
-          maxEmails: maxEmails || EMAIL_CONFIG.MAX_ACTIVE_EMAILS.toString(),
           siteStyle,
           upgradeUrlKnight,
           upgradeUrlDuke,
+          roleLimits,
           turnstile: {
             enabled: turnstileEnabled,
             siteKey: turnstileSiteKey,
-            secretKey: turnstileSecretKey
-          }
+            secretKey: turnstileSecretKey,
+          },
         }),
       })
 
       if (!res.ok) throw new Error(t("saveFailed"))
 
-      toast({
-        title: t("saveSuccess"),
-        description: t("saveSuccess"),
-      })
-
-      // 风格切换需要服务端重新注入，整页刷新生效
+      toast({ title: t("saveSuccess"), description: t("saveSuccess") })
       router.refresh()
       window.location.reload()
     } catch (error) {
@@ -126,12 +180,11 @@ export function WebsiteConfigPanel() {
       </div>
 
       <div className="space-y-4">
+        {/* 基础配置 */}
         <div className="flex items-center gap-4">
           <span className="text-sm">{t("defaultRole")}:</span>
           <Select value={defaultRole} onValueChange={setDefaultRole}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
+            <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value={ROLES.DUKE}>{tCard("roles.DUKE")}</SelectItem>
               <SelectItem value={ROLES.KNIGHT}>{tCard("roles.KNIGHT")}</SelectItem>
@@ -143,160 +196,133 @@ export function WebsiteConfigPanel() {
         <div className="flex items-center gap-4">
           <span className="text-sm">{t("emailDomains")}:</span>
           <div className="flex-1">
-            <Input 
-              value={emailDomains}
-              onChange={(e) => setEmailDomains(e.target.value)}
-              placeholder={t("emailDomainsPlaceholder")}
-            />
+            <Input value={emailDomains} onChange={e => setEmailDomains(e.target.value)} placeholder={t("emailDomainsPlaceholder")} />
           </div>
         </div>
 
         <div className="flex items-center gap-4">
           <span className="text-sm">{t("adminContact")}:</span>
           <div className="flex-1">
-            <Input 
-              value={adminContact}
-              onChange={(e) => setAdminContact(e.target.value)}
-              placeholder={t("adminContactPlaceholder")}
-            />
+            <Input value={adminContact} onChange={e => setAdminContact(e.target.value)} placeholder={t("adminContactPlaceholder")} />
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <span className="text-sm">{t("maxEmails")}:</span>
-          <div className="flex-1">
-            <Input 
-              type="number"
-              min="1"
-              max="100"
-              value={maxEmails}
-              onChange={(e) => setMaxEmails(e.target.value)}
-              placeholder={`${EMAIL_CONFIG.MAX_ACTIVE_EMAILS}`}
-            />
+        {/* 角色权益配置 */}
+        <div className="rounded-lg border border-dashed border-primary/40 p-4 space-y-4">
+          <div>
+            <Label className="text-sm font-medium">角色权益配置</Label>
+            <p className="text-xs text-muted-foreground mt-1">0 = 无限制，-1 = 禁止，修改后重新登录生效</p>
           </div>
+
+          {(["civilian", "knight", "duke"] as const).map(role => {
+            const roleLabel = { civilian: "平民", knight: "骑士", duke: "公爵" }[role]
+            return (
+              <div key={role} className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">{roleLabel}</p>
+                <div className="space-y-1.5 pl-2">
+                  <RoleLimitRow
+                    label="邮箱数量上限"
+                    value={roleLimits[role].maxEmails}
+                    onChange={v => updateLimit(role, "maxEmails", v)}
+                    hint="个"
+                  />
+                  <RoleLimitRow
+                    label="永久邮箱上限"
+                    value={roleLimits[role].maxPermanentEmails}
+                    onChange={v => updateLimit(role, "maxPermanentEmails", v)}
+                    hint="个（0=不允许）"
+                  />
+                  <RoleLimitRow
+                    label="每日发件上限"
+                    value={roleLimits[role].dailySendLimit}
+                    onChange={v => updateLimit(role, "dailySendLimit", v)}
+                    hint="封（-1=禁止）"
+                  />
+                </div>
+              </div>
+            )
+          })}
         </div>
 
-        <div className="space-y-4 rounded-lg border border-dashed border-primary/40 p-4">
-          <div className="space-y-2">
+        {/* 升级地址 */}
+        <div className="rounded-lg border border-dashed border-primary/40 p-4 space-y-3">
+          <div>
             <Label className="text-sm font-medium">升级地址配置</Label>
-            <p className="text-xs text-muted-foreground">用户点击升级按钮时跳转的地址（如闲鱼商品链接）</p>
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-muted-foreground w-16 shrink-0">骑士升级</span>
-                <Input
-                  value={upgradeUrlKnight}
-                  onChange={e => setUpgradeUrlKnight(e.target.value)}
-                  placeholder="https://..."
-                  type="url"
-                />
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-muted-foreground w-16 shrink-0">公爵升级</span>
-                <Input
-                  value={upgradeUrlDuke}
-                  onChange={e => setUpgradeUrlDuke(e.target.value)}
-                  placeholder="https://..."
-                  type="url"
-                />
-              </div>
-            </div>
+            <p className="text-xs text-muted-foreground mt-1">用户点击升级按钮时跳转的地址</p>
           </div>
-        </div>
-
-        <div className="space-y-4 rounded-lg border border-dashed border-primary/40 p-4">
           <div className="space-y-2">
-            <Label className="text-sm font-medium">网站风格</Label>
-            <p className="text-xs text-muted-foreground">选择网站的视觉风格，对所有访客生效</p>
-            <div className="grid grid-cols-3 gap-2 pt-1">
-              {STYLES.map((s) => {
-                const info = STYLE_LABELS[s]
-                return (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setSiteStyle(s)}
-                    className={cn(
-                      "flex flex-col items-center gap-1.5 rounded-lg border-2 p-3 transition-all hover:bg-accent text-center",
-                      siteStyle === s
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border text-muted-foreground"
-                    )}
-                  >
-                    <span className="text-xl leading-none">{info.icon}</span>
-                    <span className="text-xs font-medium">{info.label}</span>
-                    <span className="text-xs opacity-60">{info.desc}</span>
-                  </button>
-                )
-              })}
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted-foreground w-16 shrink-0">骑士升级</span>
+              <Input value={upgradeUrlKnight} onChange={e => setUpgradeUrlKnight(e.target.value)} placeholder="https://..." type="url" />
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted-foreground w-16 shrink-0">公爵升级</span>
+              <Input value={upgradeUrlDuke} onChange={e => setUpgradeUrlDuke(e.target.value)} placeholder="https://..." type="url" />
             </div>
           </div>
         </div>
 
-        <div className="space-y-4 rounded-lg border border-dashed border-primary/40 p-4">
+        {/* 网站风格 */}
+        <div className="rounded-lg border border-dashed border-primary/40 p-4 space-y-2">
+          <Label className="text-sm font-medium">网站风格</Label>
+          <p className="text-xs text-muted-foreground">选择网站的视觉风格，对所有访客生效</p>
+          <div className="grid grid-cols-3 gap-2 pt-1">
+            {STYLES.map(s => {
+              const info = STYLE_LABELS[s]
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setSiteStyle(s)}
+                  className={cn(
+                    "flex flex-col items-center gap-1.5 rounded-lg border-2 p-3 transition-all hover:bg-accent text-center",
+                    siteStyle === s ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"
+                  )}
+                >
+                  <span className="text-xl leading-none">{info.icon}</span>
+                  <span className="text-xs font-medium">{info.label}</span>
+                  <span className="text-xs opacity-60">{info.desc}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Turnstile */}
+        <div className="rounded-lg border border-dashed border-primary/40 p-4 space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label htmlFor="turnstile-enabled" className="text-sm font-medium">
-                {t("turnstile.enable")}
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                {t("turnstile.enableDescription")}
-              </p>
+              <Label htmlFor="turnstile-enabled" className="text-sm font-medium">{t("turnstile.enable")}</Label>
+              <p className="text-xs text-muted-foreground">{t("turnstile.enableDescription")}</p>
             </div>
-            <Switch
-              id="turnstile-enabled"
-              checked={turnstileEnabled}
-              onCheckedChange={setTurnstileEnabled}
-            />
+            <Switch id="turnstile-enabled" checked={turnstileEnabled} onCheckedChange={setTurnstileEnabled} />
           </div>
-
           <div className="space-y-2">
-            <Label htmlFor="turnstile-site-key" className="text-sm font-medium">
-              {t("turnstile.siteKey")}
-            </Label>
-            <Input
-              id="turnstile-site-key"
-              value={turnstileSiteKey}
-              onChange={(e) => setTurnstileSiteKey(e.target.value)}
-              placeholder={t("turnstile.siteKeyPlaceholder")}
-            />
+            <Label htmlFor="turnstile-site-key" className="text-sm font-medium">{t("turnstile.siteKey")}</Label>
+            <Input id="turnstile-site-key" value={turnstileSiteKey} onChange={e => setTurnstileSiteKey(e.target.value)} placeholder={t("turnstile.siteKeyPlaceholder")} />
           </div>
-
           <div className="space-y-2">
-            <Label htmlFor="turnstile-secret-key" className="text-sm font-medium">
-              {t("turnstile.secretKey")}
-            </Label>
+            <Label htmlFor="turnstile-secret-key" className="text-sm font-medium">{t("turnstile.secretKey")}</Label>
             <div className="relative">
               <Input
                 id="turnstile-secret-key"
                 type={showSecretKey ? "text" : "password"}
                 value={turnstileSecretKey}
-                onChange={(e) => setTurnstileSecretKey(e.target.value)}
+                onChange={e => setTurnstileSecretKey(e.target.value)}
                 placeholder={t("turnstile.secretKeyPlaceholder")}
               />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => setShowSecretKey((prev) => !prev)}
-              >
+              <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowSecretKey(p => !p)}>
                 {showSecretKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {t("turnstile.secretKeyDescription")}
-            </p>
+            <p className="text-xs text-muted-foreground">{t("turnstile.secretKeyDescription")}</p>
           </div>
         </div>
 
-        <Button 
-          onClick={handleSave}
-          disabled={loading}
-          className="w-full"
-        >
+        <Button onClick={handleSave} disabled={loading} className="w-full">
           {t("save")}
         </Button>
       </div>
     </div>
   )
-} 
+}

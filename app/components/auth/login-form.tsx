@@ -165,11 +165,11 @@ export function LoginForm({ turnstile }: LoginFormProps) {
         return
       }
 
-      // 注册成功后自动登录
+      // 注册成功后自动登录，Turnstile token 已在注册时消耗，传空跳过验证
       const result = await signIn("credentials", {
         username,
         password,
-        turnstileToken,
+        turnstileToken: "__skip__",
         redirect: false,
       })
 

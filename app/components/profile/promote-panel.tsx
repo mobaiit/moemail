@@ -27,13 +27,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
 
-const roleIcons = {
-  [ROLES.EMPEROR]: Crown,
-  [ROLES.DUKE]: Gem,
-  [ROLES.KNIGHT]: Sword,
-  [ROLES.CIVILIAN]: User2,
-} as const
-
 type RoleWithoutEmperor = Exclude<Role, typeof ROLES.EMPEROR>
 
 interface UserItem {
@@ -139,14 +132,14 @@ export function PromotePanel() {
     }
   }
 
-  const handleRoleSelect = (userId: string, newRole: RoleWithoutEmperor) => {
+  const handleRoleSelect = (userId: string, newRole: string) => {
     // 平民角色直接设置（不需要有效期）
-    if (newRole === ROLES.CIVILIAN) {
-      doRoleChange(userId, newRole, null)
+    if (newRole === ROLES.CIVILIAN || newRole === ROLES.EMPEROR) {
+      doRoleChange(userId, newRole as RoleWithoutEmperor, null)
       return
     }
     // 骑士/公爵：弹出有效期选择
-    setPendingRole(newRole)
+    setPendingRole(newRole as RoleWithoutEmperor)
     setExpiryPopoverUserId(userId)
     setCustomDate("")
   }
@@ -206,7 +199,6 @@ export function PromotePanel() {
           <div className="space-y-2">
             {users.map(user => {
               const isEmperor = user.role === ROLES.EMPEROR
-              const RoleIcon = roleIcons[user.role as Role] || User2
               const isUpdating = updatingUserId === user.id
               const expired = isExpired(user.roleExpiresAt)
 
@@ -247,16 +239,16 @@ export function PromotePanel() {
                         )}
                         <Select
                           value={user.role || ROLES.CIVILIAN}
-                          onValueChange={v => handleRoleSelect(user.id, v as RoleWithoutEmperor)}
+                          onValueChange={v => handleRoleSelect(user.id, v)}
                           disabled={isUpdating || expiryPopoverUserId === user.id}
                         >
                           <SelectTrigger className="w-28 h-8 text-sm">
-                            <div className="flex items-center gap-1.5">
-                              <RoleIcon className="w-3.5 h-3.5" />
-                              <SelectValue />
-                            </div>
+                            <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value={ROLES.EMPEROR}>
+                              <div className="flex items-center gap-2"><Crown className="w-4 h-4 text-amber-600" />{roleNames[ROLES.EMPEROR]}</div>
+                            </SelectItem>
                             <SelectItem value={ROLES.DUKE}>
                               <div className="flex items-center gap-2"><Gem className="w-4 h-4" />{roleNames[ROLES.DUKE]}</div>
                             </SelectItem>

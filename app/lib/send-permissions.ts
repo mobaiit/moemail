@@ -2,7 +2,7 @@ import { createDb } from "@/lib/db"
 import { userRoles, roles, messages, emails } from "@/lib/schema"
 import { eq, and, gte } from "drizzle-orm"
 import { getRequestContext } from "@cloudflare/next-on-pages"
-import { EMAIL_CONFIG } from "@/config"
+import { getRoleLimitByName } from "@/lib/role-limits"
 
 export interface SendPermissionResult {
   canSend: boolean
@@ -82,38 +82,15 @@ export async function checkSendPermission(
 async function getUserDailyLimit(userId: string): Promise<number> {
   try {
     const db = createDb()
-    
     const userRoleData = await db
       .select({ roleName: roles.name })
       .from(userRoles)
       .innerJoin(roles, eq(userRoles.roleId, roles.id))
       .where(eq(userRoles.userId, userId))
 
-    const userRoleNames = userRoleData.map(r => r.roleName)
-
-    const env = getRequestContext().env
-    const roleLimitsStr = await env.SITE_CONFIG.get("EMAIL_ROLE_LIMITS")
-    
-    const customLimits = roleLimitsStr ? JSON.parse(roleLimitsStr) : {}
-    
-    const finalLimits = {
-      emperor: EMAIL_CONFIG.DEFAULT_DAILY_SEND_LIMITS.emperor,
-      duke: customLimits.duke !== undefined ? customLimits.duke : EMAIL_CONFIG.DEFAULT_DAILY_SEND_LIMITS.duke,
-      knight: customLimits.knight !== undefined ? customLimits.knight : EMAIL_CONFIG.DEFAULT_DAILY_SEND_LIMITS.knight,
-      civilian: EMAIL_CONFIG.DEFAULT_DAILY_SEND_LIMITS.civilian,
-    }
-
-    if (userRoleNames.includes("emperor")) {
-      return finalLimits.emperor
-    } else if (userRoleNames.includes("duke")) {
-      return finalLimits.duke
-    } else if (userRoleNames.includes("knight")) {
-      return finalLimits.knight
-    } else if (userRoleNames.includes("civilian")) {
-      return finalLimits.civilian
-    }
-
-    return -1
+    const roleName = userRoleData[0]?.roleName ?? "civilian"
+    const limits = await getRoleLimitByName(roleName)
+    return limits.dailySendLimit
   } catch (error) {
     console.error('Failed to get user daily limit:', error)
     return -1
