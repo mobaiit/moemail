@@ -9,7 +9,6 @@ import { Mail, RefreshCw, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useThrottle } from "@/hooks/use-throttle"
-import { EMAIL_CONFIG } from "@/config"
 import { useToast } from "@/components/ui/use-toast"
 import {
   AlertDialog,
@@ -23,7 +22,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { ROLES } from "@/lib/permissions"
 import { useUserRole } from "@/hooks/use-user-role"
-import { useConfig } from "@/hooks/use-config"
+import { EMAIL_CONFIG, RoleName } from "@/config"
 
 interface Email {
   id: string
@@ -45,10 +44,13 @@ interface EmailResponse {
 
 export function EmailList({ onEmailSelect, selectedEmailId }: EmailListProps) {
   const { data: session } = useSession()
-  const { config } = useConfig()
   const { role } = useUserRole()
   const t = useTranslations("emails.list")
   const tCommon = useTranslations("common.actions")
+
+  // 按角色取邮箱数量上限
+  const roleName = (role ?? "civilian") as RoleName
+  const roleMaxEmails = EMAIL_CONFIG.ROLE_LIMITS[roleName]?.maxEmails ?? 1
   const [emails, setEmails] = useState<Email[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -178,7 +180,7 @@ export function EmailList({ onEmailSelect, selectedEmailId }: EmailListProps) {
               {role === ROLES.EMPEROR ? (
                 t("emailCountUnlimited", { count: total })
               ) : (
-                t("emailCount", { count: total, max: config?.maxEmails || EMAIL_CONFIG.MAX_ACTIVE_EMAILS })
+                t("emailCount", { count: total, max: roleMaxEmails })
               )}
             </span>
           </div>
