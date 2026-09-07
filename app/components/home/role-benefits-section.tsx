@@ -6,6 +6,8 @@ import { useEffect, useState } from "react"
 import { useLocale } from "next-intl"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
+import { EMAIL_CONFIG } from "@/config"
+import type { RoleLimitsMap } from "@/hooks/use-config"
 
 const ROLE_CONFIGS = [
   {
@@ -43,22 +45,70 @@ const ROLE_CONFIGS = [
   },
 ] as const
 
-const BENEFIT_ROWS: { label: string; values: (string | boolean)[] }[] = [
-  { label: "邮箱数量",  values: ["1 个",  "10 个",  "50 个",  "无限制"] },
-  { label: "永久邮箱",  values: [false,    "1 个",   "5 个",   "无限制"] },
-  { label: "每日发件",  values: [false,    "2 封",   "5 封",   "无限制"] },
-  { label: "Webhook",  values: [false,    false,    true,     true     ] },
-  { label: "API Key",  values: [false,    false,    true,     true     ] },
-  { label: "删除冷却",  values: ["24h",   "24h",    false,    false    ] },
-]
+/** 将 maxEmails/maxPermanentEmails 数字转为展示文字，0 表示无限制 */
+function fmtCount(n: number, unit: string) {
+  return n === 0 ? "无限制" : `${n} ${unit}`
+}
 
-interface Config {
+/** 将 dailySendLimit 数字转为展示文字，0 = 无限制，-1 = 禁止 */
+function fmtSend(n: number) {
+  if (n === 0) return "无限制"
+  if (n < 0) return false
+  return `${n} 封`
+}
+
+/** 根据 roleLimits 动态生成权益行数据 */
+function buildBenefitRows(limits: RoleLimitsMap) {
+  const { civilian, knight, duke, emperor } = limits
+  return [
+    {
+      label: "邮箱数量",
+      values: [
+        fmtCount(civilian.maxEmails, "个"),
+        fmtCount(knight.maxEmails, "个"),
+        fmtCount(duke.maxEmails, "个"),
+        fmtCount(emperor.maxEmails, "个"),
+      ],
+    },
+    {
+      label: "永久邮箱",
+      values: [
+        civilian.maxPermanentEmails === 0 ? false : fmtCount(civilian.maxPermanentEmails, "个"),
+        knight.maxPermanentEmails === 0 ? false : fmtCount(knight.maxPermanentEmails, "个"),
+        duke.maxPermanentEmails === 0 ? false : fmtCount(duke.maxPermanentEmails, "个"),
+        emperor.maxPermanentEmails === 0 ? "无限制" : fmtCount(emperor.maxPermanentEmails, "个"),
+      ],
+    },
+    {
+      label: "每日发件",
+      values: [
+        fmtSend(civilian.dailySendLimit),
+        fmtSend(knight.dailySendLimit),
+        fmtSend(duke.dailySendLimit),
+        fmtSend(emperor.dailySendLimit),
+      ],
+    },
+    { label: "Webhook",  values: [false, false, true,  true ] },
+    { label: "API Key",  values: [false, false, true,  true ] },
+    { label: "删除冷却", values: ["24h", "24h", false, false] },
+  ] as { label: string; values: (string | boolean)[] }[]
+}
+
+const DEFAULT_LIMITS: RoleLimitsMap = {
+  emperor:  { maxEmails: EMAIL_CONFIG.ROLE_LIMITS.emperor.maxEmails,  maxPermanentEmails: EMAIL_CONFIG.ROLE_LIMITS.emperor.maxPermanentEmails,  dailySendLimit: EMAIL_CONFIG.ROLE_LIMITS.emperor.dailySendLimit,  allowPermanentEmail: EMAIL_CONFIG.ROLE_LIMITS.emperor.allowPermanentEmail  },
+  duke:     { maxEmails: EMAIL_CONFIG.ROLE_LIMITS.duke.maxEmails,     maxPermanentEmails: EMAIL_CONFIG.ROLE_LIMITS.duke.maxPermanentEmails,     dailySendLimit: EMAIL_CONFIG.ROLE_LIMITS.duke.dailySendLimit,     allowPermanentEmail: EMAIL_CONFIG.ROLE_LIMITS.duke.allowPermanentEmail     },
+  knight:   { maxEmails: EMAIL_CONFIG.ROLE_LIMITS.knight.maxEmails,   maxPermanentEmails: EMAIL_CONFIG.ROLE_LIMITS.knight.maxPermanentEmails,   dailySendLimit: EMAIL_CONFIG.ROLE_LIMITS.knight.dailySendLimit,   allowPermanentEmail: EMAIL_CONFIG.ROLE_LIMITS.knight.allowPermanentEmail   },
+  civilian: { maxEmails: EMAIL_CONFIG.ROLE_LIMITS.civilian.maxEmails, maxPermanentEmails: EMAIL_CONFIG.ROLE_LIMITS.civilian.maxPermanentEmails, dailySendLimit: EMAIL_CONFIG.ROLE_LIMITS.civilian.dailySendLimit, allowPermanentEmail: EMAIL_CONFIG.ROLE_LIMITS.civilian.allowPermanentEmail },
+}
+
+interface ApiConfig {
   upgradeUrlKnight?: string
   upgradeUrlDuke?: string
+  roleLimits?: RoleLimitsMap
 }
 
 export function RoleBenefitsSection() {
-  const [config, setConfig] = useState<Config>({})
+  const [config, setConfig] = useState<ApiConfig>({})
   const locale = useLocale()
   const router = useRouter()
   const { data: session } = useSession()
@@ -69,13 +119,18 @@ export function RoleBenefitsSection() {
 
   useEffect(() => {
     fetch("/api/config")
-      .then(r => r.json() as Promise<Config>)
-      .then(data => setConfig({
-        upgradeUrlKnight: data.upgradeUrlKnight,
-        upgradeUrlDuke: data.upgradeUrlDuke,
-      }))
+      .then(r => r.json() as Promise<ApiConfig>)
+      .then(data => setConfig(data))
       .catch(console.error)
   }, [])
+
+  const roleLimits: RoleLimitsMap = {
+    emperor:  { ...DEFAULT_LIMITS.emperor,  ...config.roleLimits?.emperor  },
+    duke:     { ...DEFAULT_LIMITS.duke,     ...config.roleLimits?.duke     },
+    knight:   { ...DEFAULT_LIMITS.knight,   ...config.roleLimits?.knight   },
+    civilian: { ...DEFAULT_LIMITS.civilian, ...config.roleLimits?.civilian },
+  }
+  const benefitRows = buildBenefitRows(roleLimits)
 
   return (
     <section className="w-full max-w-3xl mx-auto px-2 sm:px-0 py-8">
@@ -107,7 +162,7 @@ export function RoleBenefitsSection() {
             </tr>
           </thead>
           <tbody>
-            {BENEFIT_ROWS.map((row, i) => (
+            {benefitRows.map((row, i) => (
               <tr key={row.label} className={i % 2 === 0 ? "bg-muted/30" : ""}>
                 <td className="px-4 py-3 text-sm text-muted-foreground">{row.label}</td>
                 {row.values.map((v, j) => (

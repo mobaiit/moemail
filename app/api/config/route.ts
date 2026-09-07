@@ -32,8 +32,8 @@ export async function GET() {
     env.SITE_CONFIG.get("UPGRADE_URL_DUKE"),
   ])
 
-  // 角色限制只对管理员返回
-  const roleLimits = canManageConfig ? await getRoleLimits() : undefined
+  // 角色限制对所有用户返回（数据本身不敏感，用户需要知道各角色配额）
+  const roleLimits = await getRoleLimits()
 
   return Response.json({
     defaultRole: defaultRole || ROLES.CIVILIAN,

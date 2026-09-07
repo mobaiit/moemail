@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react"
 import { TrendingUp } from "lucide-react"
 import { RoleBenefitsTable } from "./role-benefits"
+import type { RoleLimitsMap } from "@/hooks/use-config"
 
 interface UpgradeConfig {
   upgradeUrlKnight?: string
   upgradeUrlDuke?: string
+  roleLimits?: RoleLimitsMap
 }
 
 export function UpgradePanel() {
@@ -18,6 +20,7 @@ export function UpgradePanel() {
       .then(data => setConfig({
         upgradeUrlKnight: data.upgradeUrlKnight,
         upgradeUrlDuke: data.upgradeUrlDuke,
+        roleLimits: data.roleLimits,
       }))
       .catch(console.error)
   }, [])
@@ -35,6 +38,7 @@ export function UpgradePanel() {
         compact
         upgradeUrlKnight={config.upgradeUrlKnight}
         upgradeUrlDuke={config.upgradeUrlDuke}
+        roleLimits={config.roleLimits}
       />
     </div>
   )

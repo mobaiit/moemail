@@ -40,13 +40,6 @@ export const EMAIL_CONFIG = {
     },
   },
 
-  // 发件日限额（兼容旧逻辑，从 ROLE_LIMITS 派生）
-  DEFAULT_DAILY_SEND_LIMITS: {
-    emperor: 0,
-    duke: 5,
-    knight: 2,
-    civilian: -1,
-  },
 } as const
 
 export type RoleName = keyof typeof EMAIL_CONFIG.ROLE_LIMITS
