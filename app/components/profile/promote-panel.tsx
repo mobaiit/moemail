@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { useState, useEffect, useCallback } from "react"
 import { useToast } from "@/components/ui/use-toast"
 import { ROLES, Role } from "@/lib/permissions"
+import Image from "next/image"
 import {
   Select,
   SelectContent,
@@ -24,11 +25,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { Label } from "@/components/ui/label"
 
 const roleIcons = {
@@ -217,7 +213,7 @@ export function PromotePanel() {
               return (
                 <div key={user.id} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors">
                   {user.image ? (
-                    <img src={user.image} alt="" className="w-8 h-8 rounded-full" />
+                    <Image src={user.image} alt="" width={32} height={32} className="w-8 h-8 rounded-full" />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                       <User2 className="w-4 h-4 text-primary" />

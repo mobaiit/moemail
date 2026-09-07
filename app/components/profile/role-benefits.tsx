@@ -3,7 +3,6 @@
 import { Crown, Gem, Sword, User2, Check, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ROLES } from "@/lib/permissions"
-import { EMAIL_CONFIG } from "@/config"
 import { useSession } from "next-auth/react"
 
 const ROLE_CONFIGS = [
@@ -70,8 +69,6 @@ interface RoleBenefitsTableProps {
 export function RoleBenefitsTable({ compact, upgradeUrlKnight, upgradeUrlDuke }: RoleBenefitsTableProps) {
   const { data: session } = useSession()
   const currentRole = session?.user?.roles?.[0]?.name ?? ROLES.CIVILIAN
-
-  const limits = EMAIL_CONFIG.ROLE_LIMITS
 
   const rows = [
     { label: "邮箱数量", values: ["1 个", "10 个", "50 个", "无限制"] },
