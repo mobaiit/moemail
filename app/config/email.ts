@@ -25,7 +25,7 @@ export const EMAIL_CONFIG = {
     knight: {
       maxEmails: 10,
       maxPermanentEmails: 1,
-      maxMonthlyApiCalls: 10_000,
+      maxMonthlyApiCalls: 0,  // 不开放 API
       dailySendLimit: 2,
       allowWebhook: false,
       allowPermanentEmail: true,
@@ -33,7 +33,7 @@ export const EMAIL_CONFIG = {
     civilian: {
       maxEmails: 1,
       maxPermanentEmails: 0, // 不允许永久邮箱
-      maxMonthlyApiCalls: 0, // 暂不开放 API
+      maxMonthlyApiCalls: 0, // 不开放 API
       dailySendLimit: -1,    // -1 = 禁止发件
       allowWebhook: false,
       allowPermanentEmail: false,

@@ -193,12 +193,11 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
             </RadioGroup>
           </div>
 
-          {/* 角色限制说明 */}
           {!isEmperor && (
             <p className="text-xs text-muted-foreground">
               {roleName === ROLES.CIVILIAN && `当前角色（平民）：最多 ${roleLimits.maxEmails} 个邮箱，不支持永久邮箱`}
-              {roleName === ROLES.KNIGHT && `当前角色（骑士）：最多 ${roleLimits.maxEmails} 个邮箱，永久邮箱最多 ${roleLimits.maxPermanentEmails} 个`}
-              {roleName === ROLES.DUKE && `当前角色（公爵）：最多 ${roleLimits.maxEmails} 个邮箱，永久邮箱最多 ${roleLimits.maxPermanentEmails} 个`}
+              {roleName === ROLES.KNIGHT && `当前角色（骑士）：最多 ${roleLimits.maxEmails} 个邮箱，永久邮箱最多 ${roleLimits.maxPermanentEmails} 个，每日发件 ${roleLimits.dailySendLimit} 封`}
+              {roleName === ROLES.DUKE && `当前角色（公爵）：最多 ${roleLimits.maxEmails} 个邮箱，永久邮箱最多 ${roleLimits.maxPermanentEmails} 个，每日发件 ${roleLimits.dailySendLimit} 封`}
             </p>
           )}
 

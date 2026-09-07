@@ -27,7 +27,6 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   ],
   [ROLES.KNIGHT]: [
     PERMISSIONS.MANAGE_EMAIL,
-    PERMISSIONS.MANAGE_API_KEY,
   ],
   [ROLES.CIVILIAN]: [
     PERMISSIONS.MANAGE_EMAIL,
