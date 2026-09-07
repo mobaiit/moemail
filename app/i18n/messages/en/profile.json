@@ -121,8 +121,24 @@
       "step4": "Emails will be pushed to the group in Markdown format"
     }
   },
+  "changePassword": {
+    "title": "Change Password",
+    "currentPassword": "Current Password",
+    "currentPasswordPlaceholder": "Enter current password",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "At least 8 characters",
+    "confirmPassword": "Confirm New Password",
+    "confirmPasswordPlaceholder": "Re-enter new password",
+    "submit": "Confirm Change",
+    "submitting": "Changing...",
+    "success": "Password changed successfully, logging out...",
+    "errorRequired": "Please fill in all fields",
+    "errorTooShort": "New password must be at least 8 characters",
+    "errorMismatch": "New passwords do not match",
+    "errorFailed": "Change failed",
+    "errorRetry": "Please try again later"
+  },
   "website": {
-    "title": "Website Configuration",
     "description": "Configure website settings (Emperor only)",
     "defaultRole": "Default Role for New Users",
     "emailDomains": "Email Domains",

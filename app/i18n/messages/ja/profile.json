@@ -120,8 +120,24 @@
       "step4": "メール受信時に Markdown 形式でグループに通知されます"
     }
   },
+  "changePassword": {
+    "title": "パスワード変更",
+    "currentPassword": "現在のパスワード",
+    "currentPasswordPlaceholder": "現在のパスワードを入力",
+    "newPassword": "新しいパスワード",
+    "newPasswordPlaceholder": "8文字以上",
+    "confirmPassword": "新しいパスワードの確認",
+    "confirmPasswordPlaceholder": "新しいパスワードを再入力",
+    "submit": "変更を確定",
+    "submitting": "変更中...",
+    "success": "パスワードを変更しました。ログアウトします...",
+    "errorRequired": "すべての項目を入力してください",
+    "errorTooShort": "新しいパスワードは8文字以上にしてください",
+    "errorMismatch": "新しいパスワードが一致しません",
+    "errorFailed": "変更に失敗しました",
+    "errorRetry": "しばらくしてから再試行してください"
+  },
   "website": {
-    "title": "サイト設定",
     "description": "サイトの設定を管理（皇帝のみ利用可能）",
     "defaultRole": "新規ユーザーのデフォルトロール",
     "emailDomains": "メールボックスドメイン",

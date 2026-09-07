@@ -2,14 +2,15 @@
 
 import { useState } from "react"
 import { KeyRound, Eye, EyeOff } from "lucide-react"
+import { useTranslations, useLocale } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
 import { signOut } from "next-auth/react"
-import { useLocale } from "next-intl"
 
 export function ChangePasswordPanel() {
+  const t = useTranslations("profile.changePassword")
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -22,15 +23,15 @@ export function ChangePasswordPanel() {
 
   const handleSubmit = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
-      toast({ title: "请填写完整信息", variant: "destructive" })
+      toast({ title: t("errorRequired"), variant: "destructive" })
       return
     }
     if (newPassword.length < 8) {
-      toast({ title: "新密码长度不能少于8位", variant: "destructive" })
+      toast({ title: t("errorTooShort"), variant: "destructive" })
       return
     }
     if (newPassword !== confirmPassword) {
-      toast({ title: "两次输入的新密码不一致", variant: "destructive" })
+      toast({ title: t("errorMismatch"), variant: "destructive" })
       return
     }
 
@@ -43,18 +44,17 @@ export function ChangePasswordPanel() {
       })
       const data = await res.json() as { success?: boolean; error?: string }
 
-      if (!res.ok) throw new Error(data.error || "修改失败")
+      if (!res.ok) throw new Error(data.error || t("errorFailed"))
 
-      toast({ title: "密码修改成功，即将退出登录..." })
+      toast({ title: t("success") })
 
-      // 修改密码后自动退出，强制重新登录
       setTimeout(() => {
         signOut({ callbackUrl: `/${locale}` })
       }, 1500)
     } catch (error) {
       toast({
-        title: "修改失败",
-        description: error instanceof Error ? error.message : "请稍后重试",
+        title: t("errorFailed"),
+        description: error instanceof Error ? error.message : t("errorRetry"),
         variant: "destructive",
       })
     } finally {
@@ -66,19 +66,19 @@ export function ChangePasswordPanel() {
     <div className="bg-background rounded-lg border-2 border-primary/20 p-6">
       <div className="flex items-center gap-2 mb-6">
         <KeyRound className="w-5 h-5 text-primary" />
-        <h2 className="text-lg font-semibold">修改密码</h2>
+        <h2 className="text-lg font-semibold">{t("title")}</h2>
       </div>
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="current-password">当前密码</Label>
+          <Label htmlFor="current-password">{t("currentPassword")}</Label>
           <div className="relative">
             <Input
               id="current-password"
               type={showCurrent ? "text" : "password"}
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              placeholder="请输入当前密码"
+              placeholder={t("currentPasswordPlaceholder")}
             />
             <Button
               type="button"
@@ -93,14 +93,14 @@ export function ChangePasswordPanel() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="new-password">新密码</Label>
+          <Label htmlFor="new-password">{t("newPassword")}</Label>
           <div className="relative">
             <Input
               id="new-password"
               type={showNew ? "text" : "password"}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="至少8位"
+              placeholder={t("newPasswordPlaceholder")}
             />
             <Button
               type="button"
@@ -115,14 +115,14 @@ export function ChangePasswordPanel() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="confirm-password">确认新密码</Label>
+          <Label htmlFor="confirm-password">{t("confirmPassword")}</Label>
           <div className="relative">
             <Input
               id="confirm-password"
               type={showConfirm ? "text" : "password"}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="再次输入新密码"
+              placeholder={t("confirmPasswordPlaceholder")}
             />
             <Button
               type="button"
@@ -137,7 +137,7 @@ export function ChangePasswordPanel() {
         </div>
 
         <Button onClick={handleSubmit} disabled={loading} className="w-full">
-          {loading ? "修改中..." : "确认修改"}
+          {loading ? t("submitting") : t("submit")}
         </Button>
       </div>
     </div>

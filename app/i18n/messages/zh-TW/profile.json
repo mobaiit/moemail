@@ -120,8 +120,24 @@
       "step4": "收到郵件後將以 Markdown 格式推送到群"
     }
   },
+  "changePassword": {
+    "title": "修改密碼",
+    "currentPassword": "目前密碼",
+    "currentPasswordPlaceholder": "請輸入目前密碼",
+    "newPassword": "新密碼",
+    "newPasswordPlaceholder": "至少 8 個字元",
+    "confirmPassword": "確認新密碼",
+    "confirmPasswordPlaceholder": "再次輸入新密碼",
+    "submit": "確認修改",
+    "submitting": "修改中...",
+    "success": "密碼修改成功，即將登出...",
+    "errorRequired": "請填寫完整資訊",
+    "errorTooShort": "新密碼長度不能少於 8 個字元",
+    "errorMismatch": "兩次輸入的新密碼不一致",
+    "errorFailed": "修改失敗",
+    "errorRetry": "請稍後再試"
+  },
   "website": {
-    "title": "網站設定",
     "description": "設定網站選項（僅皇帝可用）",
     "defaultRole": "新使用者預設角色",
     "emailDomains": "郵箱網域",

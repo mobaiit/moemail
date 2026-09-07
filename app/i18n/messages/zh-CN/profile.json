@@ -121,8 +121,24 @@
       "step4": "收到邮件后将以 Markdown 格式推送到群"
     }
   },
+  "changePassword": {
+    "title": "修改密码",
+    "currentPassword": "当前密码",
+    "currentPasswordPlaceholder": "请输入当前密码",
+    "newPassword": "新密码",
+    "newPasswordPlaceholder": "至少8位",
+    "confirmPassword": "确认新密码",
+    "confirmPasswordPlaceholder": "再次输入新密码",
+    "submit": "确认修改",
+    "submitting": "修改中...",
+    "success": "密码修改成功，即将退出登录...",
+    "errorRequired": "请填写完整信息",
+    "errorTooShort": "新密码长度不能少于8位",
+    "errorMismatch": "两次输入的新密码不一致",
+    "errorFailed": "修改失败",
+    "errorRetry": "请稍后重试"
+  },
   "website": {
-    "title": "网站配置",
     "description": "配置网站设置（仅皇帝可用）",
     "defaultRole": "新用户默认角色",
     "emailDomains": "邮箱域名",
