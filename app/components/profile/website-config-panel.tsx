@@ -30,6 +30,8 @@ export function WebsiteConfigPanel() {
   const [adminContact, setAdminContact] = useState<string>("")
   const [maxEmails, setMaxEmails] = useState<string>(EMAIL_CONFIG.MAX_ACTIVE_EMAILS.toString())
   const [siteStyle, setSiteStyle] = useState<SiteStyle>("default")
+  const [upgradeUrlKnight, setUpgradeUrlKnight] = useState("")
+  const [upgradeUrlDuke, setUpgradeUrlDuke] = useState("")
   const [turnstileEnabled, setTurnstileEnabled] = useState(false)
   const [turnstileSiteKey, setTurnstileSiteKey] = useState("")
   const [turnstileSecretKey, setTurnstileSecretKey] = useState("")
@@ -52,6 +54,8 @@ export function WebsiteConfigPanel() {
         adminContact: string,
         maxEmails: string,
         siteStyle: string,
+        upgradeUrlKnight?: string,
+        upgradeUrlDuke?: string,
         turnstile?: {
           enabled: boolean,
           siteKey: string,
@@ -63,6 +67,8 @@ export function WebsiteConfigPanel() {
       setAdminContact(data.adminContact)
       setMaxEmails(data.maxEmails || EMAIL_CONFIG.MAX_ACTIVE_EMAILS.toString())
       setSiteStyle((data.siteStyle as SiteStyle) || "default")
+      setUpgradeUrlKnight(data.upgradeUrlKnight ?? "")
+      setUpgradeUrlDuke(data.upgradeUrlDuke ?? "")
       setTurnstileEnabled(Boolean(data.turnstile?.enabled))
       setTurnstileSiteKey(data.turnstile?.siteKey ?? "")
       setTurnstileSecretKey(data.turnstile?.secretKey ?? "")
@@ -81,6 +87,8 @@ export function WebsiteConfigPanel() {
           adminContact,
           maxEmails: maxEmails || EMAIL_CONFIG.MAX_ACTIVE_EMAILS.toString(),
           siteStyle,
+          upgradeUrlKnight,
+          upgradeUrlDuke,
           turnstile: {
             enabled: turnstileEnabled,
             siteKey: turnstileSiteKey,
@@ -165,6 +173,33 @@ export function WebsiteConfigPanel() {
               onChange={(e) => setMaxEmails(e.target.value)}
               placeholder={`${EMAIL_CONFIG.MAX_ACTIVE_EMAILS}`}
             />
+          </div>
+        </div>
+
+        <div className="space-y-4 rounded-lg border border-dashed border-primary/40 p-4">
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">升级地址配置</Label>
+            <p className="text-xs text-muted-foreground">用户点击升级按钮时跳转的地址（如闲鱼商品链接）</p>
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-muted-foreground w-16 shrink-0">骑士升级</span>
+                <Input
+                  value={upgradeUrlKnight}
+                  onChange={e => setUpgradeUrlKnight(e.target.value)}
+                  placeholder="https://..."
+                  type="url"
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-muted-foreground w-16 shrink-0">公爵升级</span>
+                <Input
+                  value={upgradeUrlDuke}
+                  onChange={e => setUpgradeUrlDuke(e.target.value)}
+                  placeholder="https://..."
+                  type="url"
+                />
+              </div>
+            </div>
           </div>
         </div>
 

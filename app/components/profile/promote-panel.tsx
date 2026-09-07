@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
-import { Crown, Gem, Sword, User2, Loader2, Search, ChevronLeft, ChevronRight, Users, Trash2 } from "lucide-react"
+import { Crown, Gem, Sword, User2, Loader2, Search, ChevronLeft, ChevronRight, Users, Trash2, Calendar, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useState, useEffect, useCallback } from "react"
 import { useToast } from "@/components/ui/use-toast"
@@ -24,6 +24,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Label } from "@/components/ui/label"
 
 const roleIcons = {
   [ROLES.EMPEROR]: Crown,
@@ -41,9 +47,31 @@ interface UserItem {
   email: string | null
   image: string | null
   role: string | null
+  roleExpiresAt: string | null
 }
 
 const PAGE_SIZE = 10
+
+function formatExpiry(iso: string | null): string {
+  if (!iso) return "永久"
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return "永久"
+  return d.toLocaleDateString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" })
+}
+
+function isExpired(iso: string | null): boolean {
+  if (!iso) return false
+  return new Date(iso) < new Date()
+}
+
+// 快捷有效期选项（天数）
+const EXPIRY_PRESETS = [
+  { label: "1 个月", days: 30 },
+  { label: "3 个月", days: 90 },
+  { label: "6 个月", days: 180 },
+  { label: "1 年", days: 365 },
+  { label: "永久", days: 0 },
+]
 
 export function PromotePanel() {
   const t = useTranslations("profile.promote")
@@ -56,6 +84,10 @@ export function PromotePanel() {
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null)
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   const [userToDelete, setUserToDelete] = useState<UserItem | null>(null)
+  // 有效期设置弹出框状态
+  const [expiryPopoverUserId, setExpiryPopoverUserId] = useState<string | null>(null)
+  const [pendingRole, setPendingRole] = useState<RoleWithoutEmperor | null>(null)
+  const [customDate, setCustomDate] = useState("")
   const { toast } = useToast()
 
   const roleNames = {
@@ -70,92 +102,84 @@ export function PromotePanel() {
   const fetchUsers = useCallback(async () => {
     setLoading(true)
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        pageSize: PAGE_SIZE.toString(),
-      })
-      if (search.trim()) {
-        params.set("search", search.trim())
-      }
+      const params = new URLSearchParams({ page: page.toString(), pageSize: PAGE_SIZE.toString() })
+      if (search.trim()) params.set("search", search.trim())
       const res = await fetch(`/api/roles/users?${params}`)
       if (!res.ok) throw new Error("Failed to fetch")
-      const data = await res.json() as {
-        users: UserItem[]
-        total: number
-        page: number
-        pageSize: number
-      }
+      const data = await res.json() as { users: UserItem[]; total: number; page: number; pageSize: number }
       setUsers(data.users)
       setTotal(data.total)
     } catch {
-      toast({
-        title: t("updateFailed"),
-        variant: "destructive",
-      })
+      toast({ title: t("updateFailed"), variant: "destructive" })
     } finally {
       setLoading(false)
     }
   }, [page, search, t, toast])
 
-  useEffect(() => {
-    fetchUsers()
-  }, [fetchUsers])
+  useEffect(() => { fetchUsers() }, [fetchUsers])
+  useEffect(() => { setPage(1) }, [search])
 
-  useEffect(() => {
-    setPage(1)
-  }, [search])
-
-  const handleRoleChange = async (userId: string, newRole: RoleWithoutEmperor) => {
+  const doRoleChange = async (userId: string, newRole: RoleWithoutEmperor, expiresAt: string | null) => {
     setUpdatingUserId(userId)
     try {
       const res = await fetch("/api/roles/promote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, roleName: newRole }),
+        body: JSON.stringify({ userId, roleName: newRole, expiresAt }),
       })
       if (!res.ok) {
         const error = await res.json() as { error: string }
         throw new Error(error.error)
       }
-      setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
-      )
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole, roleExpiresAt: expiresAt } : u))
       toast({ title: t("updateSuccess") })
     } catch (error) {
-      toast({
-        title: t("updateFailed"),
-        description: error instanceof Error ? error.message : undefined,
-        variant: "destructive",
-      })
+      toast({ title: t("updateFailed"), description: error instanceof Error ? error.message : undefined, variant: "destructive" })
     } finally {
       setUpdatingUserId(null)
+      setExpiryPopoverUserId(null)
+      setPendingRole(null)
+      setCustomDate("")
     }
+  }
+
+  const handleRoleSelect = (userId: string, newRole: RoleWithoutEmperor) => {
+    // 平民角色直接设置（不需要有效期）
+    if (newRole === ROLES.CIVILIAN) {
+      doRoleChange(userId, newRole, null)
+      return
+    }
+    // 骑士/公爵：弹出有效期选择
+    setPendingRole(newRole)
+    setExpiryPopoverUserId(userId)
+    setCustomDate("")
+  }
+
+  const handleExpiryConfirm = (days: number) => {
+    if (!expiryPopoverUserId || !pendingRole) return
+    const expiresAt = days === 0 ? null : new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
+    doRoleChange(expiryPopoverUserId, pendingRole, expiresAt)
+  }
+
+  const handleCustomDateConfirm = () => {
+    if (!expiryPopoverUserId || !pendingRole || !customDate) return
+    doRoleChange(expiryPopoverUserId, pendingRole, new Date(customDate).toISOString())
   }
 
   const handleDelete = async (user: UserItem) => {
     setDeletingUserId(user.id)
     try {
-      const res = await fetch(`/api/users/${user.id}`, {
-        method: "DELETE",
-      })
+      const res = await fetch(`/api/users/${user.id}`, { method: "DELETE" })
       if (!res.ok) {
         const error = await res.json() as { error: string }
         throw new Error(error.error)
       }
       toast({ title: t("deleteSuccess") })
       setUserToDelete(null)
-      // 若删除的是当前页最后一条，且不在首页，则退回上一页（useEffect 会重新拉取）
-      if (users.length === 1 && page > 1) {
-        setPage((p) => p - 1)
-      } else {
-        await fetchUsers()
-      }
+      if (users.length === 1 && page > 1) setPage(p => p - 1)
+      else await fetchUsers()
     } catch (error) {
-      toast({
-        title: t("deleteFailed"),
-        description: error instanceof Error ? error.message : undefined,
-        variant: "destructive",
-      })
+      toast({ title: t("deleteFailed"), description: error instanceof Error ? error.message : undefined, variant: "destructive" })
     } finally {
       setDeletingUserId(null)
     }
@@ -166,19 +190,12 @@ export function PromotePanel() {
       <div className="flex items-center gap-2 mb-6">
         <Users className="w-5 h-5 text-primary" />
         <h2 className="text-lg font-semibold">{t("title")}</h2>
-        <span className="text-sm text-muted-foreground ml-auto">
-          {t("totalUsers", { count: total })}
-        </span>
+        <span className="text-sm text-muted-foreground ml-auto">{t("totalUsers", { count: total })}</span>
       </div>
 
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t("searchPlaceholder")}
-          className="pl-9"
-        />
+        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={t("searchPlaceholder")} className="pl-9" />
       </div>
 
       {loading ? (
@@ -187,28 +204,20 @@ export function PromotePanel() {
           <span className="ml-2 text-muted-foreground">{t("loading")}</span>
         </div>
       ) : users.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
-          {t("noUsers")}
-        </div>
+        <div className="text-center py-12 text-muted-foreground">{t("noUsers")}</div>
       ) : (
         <>
           <div className="space-y-2">
-            {users.map((user) => {
+            {users.map(user => {
               const isEmperor = user.role === ROLES.EMPEROR
               const RoleIcon = roleIcons[user.role as Role] || User2
               const isUpdating = updatingUserId === user.id
+              const expired = isExpired(user.roleExpiresAt)
 
               return (
-                <div
-                  key={user.id}
-                  className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors"
-                >
+                <div key={user.id} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors">
                   {user.image ? (
-                    <img
-                      src={user.image}
-                      alt=""
-                      className="w-8 h-8 rounded-full"
-                    />
+                    <img src={user.image} alt="" className="w-8 h-8 rounded-full" />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                       <User2 className="w-4 h-4 text-primary" />
@@ -216,11 +225,14 @@ export function PromotePanel() {
                   )}
 
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm truncate">
-                      {user.name || user.username || "—"}
-                    </div>
-                    <div className="text-xs text-muted-foreground truncate">
-                      {user.email || user.username || "—"}
+                    <div className="font-medium text-sm truncate">{user.name || user.username || "—"}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground truncate">{user.email || user.username || "—"}</span>
+                      {user.roleExpiresAt && user.role !== ROLES.CIVILIAN && (
+                        <span className={`text-xs px-1.5 py-0.5 rounded ${expired ? "bg-destructive/10 text-destructive" : "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"}`}>
+                          {expired ? "已过期" : `到期：${formatExpiry(user.roleExpiresAt)}`}
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -239,10 +251,10 @@ export function PromotePanel() {
                         )}
                         <Select
                           value={user.role || ROLES.CIVILIAN}
-                          onValueChange={(v) => handleRoleChange(user.id, v as RoleWithoutEmperor)}
-                          disabled={isUpdating}
+                          onValueChange={v => handleRoleSelect(user.id, v as RoleWithoutEmperor)}
+                          disabled={isUpdating || expiryPopoverUserId === user.id}
                         >
-                          <SelectTrigger className="w-32 h-8 text-sm">
+                          <SelectTrigger className="w-28 h-8 text-sm">
                             <div className="flex items-center gap-1.5">
                               <RoleIcon className="w-3.5 h-3.5" />
                               <SelectValue />
@@ -250,26 +262,61 @@ export function PromotePanel() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value={ROLES.DUKE}>
-                              <div className="flex items-center gap-2">
-                                <Gem className="w-4 h-4" />
-                                {roleNames[ROLES.DUKE]}
-                              </div>
+                              <div className="flex items-center gap-2"><Gem className="w-4 h-4" />{roleNames[ROLES.DUKE]}</div>
                             </SelectItem>
                             <SelectItem value={ROLES.KNIGHT}>
-                              <div className="flex items-center gap-2">
-                                <Sword className="w-4 h-4" />
-                                {roleNames[ROLES.KNIGHT]}
-                              </div>
+                              <div className="flex items-center gap-2"><Sword className="w-4 h-4" />{roleNames[ROLES.KNIGHT]}</div>
                             </SelectItem>
                             <SelectItem value={ROLES.CIVILIAN}>
-                              <div className="flex items-center gap-2">
-                                <User2 className="w-4 h-4" />
-                                {roleNames[ROLES.CIVILIAN]}
-                              </div>
+                              <div className="flex items-center gap-2"><User2 className="w-4 h-4" />{roleNames[ROLES.CIVILIAN]}</div>
                             </SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
+
+                      {/* 有效期设置 Popover */}
+                      {expiryPopoverUserId === user.id && (
+                        <div className="absolute right-0 z-20 mt-1 w-64 rounded-lg border bg-background shadow-lg p-4 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-sm font-medium flex items-center gap-1.5">
+                              <Calendar className="w-4 h-4" />
+                              设置有效期（{roleNames[pendingRole as Role]}）
+                            </Label>
+                            <button onClick={() => { setExpiryPopoverUserId(null); setPendingRole(null) }}>
+                              <X className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {EXPIRY_PRESETS.map(preset => (
+                              <Button
+                                key={preset.label}
+                                variant="outline"
+                                size="sm"
+                                className="text-xs"
+                                onClick={() => handleExpiryConfirm(preset.days)}
+                              >
+                                {preset.label}
+                              </Button>
+                            ))}
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-muted-foreground">自定义日期</Label>
+                            <div className="flex gap-2">
+                              <Input
+                                type="date"
+                                value={customDate}
+                                min={new Date().toISOString().slice(0, 10)}
+                                onChange={e => setCustomDate(e.target.value)}
+                                className="h-8 text-sm flex-1"
+                              />
+                              <Button size="sm" className="h-8" onClick={handleCustomDateConfirm} disabled={!customDate}>
+                                确定
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       <Button
                         variant="ghost"
                         size="icon"
@@ -288,68 +335,34 @@ export function PromotePanel() {
 
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-4 pt-4 border-t">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page <= 1}
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                {t("prevPage")}
+              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}>
+                <ChevronLeft className="w-4 h-4 mr-1" />{t("prevPage")}
               </Button>
-              <span className="text-sm text-muted-foreground">
-                {t("pageInfo", { current: page, total: totalPages })}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page >= totalPages}
-              >
-                {t("nextPage")}
-                <ChevronRight className="w-4 h-4 ml-1" />
+              <span className="text-sm text-muted-foreground">{t("pageInfo", { current: page, total: totalPages })}</span>
+              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
+                {t("nextPage")}<ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
           )}
         </>
       )}
 
-      <AlertDialog
-        open={!!userToDelete}
-        onOpenChange={(open) => {
-          if (!open && !deletingUserId) setUserToDelete(null)
-        }}
-      >
+      <AlertDialog open={!!userToDelete} onOpenChange={open => { if (!open && !deletingUserId) setUserToDelete(null) }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("deleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("deleteConfirm", {
-                name:
-                  userToDelete?.name ||
-                  userToDelete?.username ||
-                  userToDelete?.email ||
-                  "",
-              })}
+              {t("deleteConfirm", { name: userToDelete?.name || userToDelete?.username || userToDelete?.email || "" })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={!!deletingUserId}>
-              {t("cancel")}
-            </AlertDialogCancel>
+            <AlertDialogCancel disabled={!!deletingUserId}>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive hover:bg-destructive/90"
               disabled={!!deletingUserId}
-              onClick={(e) => {
-                e.preventDefault()
-                if (userToDelete) handleDelete(userToDelete)
-              }}
+              onClick={() => userToDelete && handleDelete(userToDelete)}
             >
-              {deletingUserId ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                t("deleteConfirmButton")
-              )}
+              {deletingUserId ? <Loader2 className="w-4 h-4 animate-spin" /> : t("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

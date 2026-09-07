@@ -47,6 +47,7 @@ export const emails = sqliteTable("email", {
     .notNull()
     .$defaultFn(() => new Date()),
   expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  deletedAt: integer("deleted_at", { mode: "timestamp_ms" }),
 }, (table) => ({
   expiresAtIdx: index("email_expires_at_idx").on(table.expiresAt),
   userIdIdx: index("email_user_id_idx").on(table.userId),
@@ -105,6 +106,7 @@ export const userRoles = sqliteTable("user_role", {
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   roleId: text("role_id").notNull().references(() => roles.id, { onDelete: "cascade" }),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  expiresAt: integer("expires_at", { mode: "timestamp" }),
 }, (table) => ({
   pk: primaryKey({ columns: [table.userId, table.roleId] }),
   userIdIdx: index("user_role_user_id_idx").on(table.userId),

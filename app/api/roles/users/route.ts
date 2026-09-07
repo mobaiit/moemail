@@ -50,6 +50,7 @@ export async function GET(request: Request) {
         email: users.email,
         image: users.image,
         role: roles.name,
+        roleExpiresAt: userRoles.expiresAt,
       })
       .from(users)
       .leftJoin(userRoles, eq(userRoles.userId, users.id))
@@ -67,6 +68,7 @@ export async function GET(request: Request) {
         email: u.email,
         image: u.image,
         role: u.role || null,
+        roleExpiresAt: u.roleExpiresAt ? u.roleExpiresAt.toISOString() : null,
       })),
       total,
       page,

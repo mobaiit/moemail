@@ -18,6 +18,8 @@ export async function GET() {
     turnstileSiteKey,
     turnstileSecretKey,
     siteStyle,
+    upgradeUrlKnight,
+    upgradeUrlDuke,
   ] = await Promise.all([
     env.SITE_CONFIG.get("DEFAULT_ROLE"),
     env.SITE_CONFIG.get("EMAIL_DOMAINS"),
@@ -27,6 +29,8 @@ export async function GET() {
     env.SITE_CONFIG.get("TURNSTILE_SITE_KEY"),
     env.SITE_CONFIG.get("TURNSTILE_SECRET_KEY"),
     env.SITE_CONFIG.get("SITE_STYLE"),
+    env.SITE_CONFIG.get("UPGRADE_URL_KNIGHT"),
+    env.SITE_CONFIG.get("UPGRADE_URL_DUKE"),
   ])
 
   return Response.json({
@@ -35,6 +39,8 @@ export async function GET() {
     adminContact: adminContact || "",
     maxEmails: maxEmails || EMAIL_CONFIG.MAX_ACTIVE_EMAILS.toString(),
     siteStyle: siteStyle || "default",
+    upgradeUrlKnight: upgradeUrlKnight || "",
+    upgradeUrlDuke: upgradeUrlDuke || "",
     turnstile: canManageConfig ? {
       enabled: turnstileEnabled === "true",
       siteKey: turnstileSiteKey || "",
@@ -58,6 +64,8 @@ export async function POST(request: Request) {
     adminContact,
     maxEmails,
     siteStyle,
+    upgradeUrlKnight,
+    upgradeUrlDuke,
     turnstile
   } = await request.json() as { 
     defaultRole: Exclude<Role, typeof ROLES.EMPEROR>,
@@ -65,6 +73,8 @@ export async function POST(request: Request) {
     adminContact: string,
     maxEmails: string,
     siteStyle: string,
+    upgradeUrlKnight?: string,
+    upgradeUrlDuke?: string,
     turnstile?: {
       enabled: boolean,
       siteKey: string,
@@ -93,6 +103,8 @@ export async function POST(request: Request) {
     env.SITE_CONFIG.put("ADMIN_CONTACT", adminContact),
     env.SITE_CONFIG.put("MAX_EMAILS", maxEmails),
     env.SITE_CONFIG.put("SITE_STYLE", siteStyle || "default"),
+    env.SITE_CONFIG.put("UPGRADE_URL_KNIGHT", upgradeUrlKnight || ""),
+    env.SITE_CONFIG.put("UPGRADE_URL_DUKE", upgradeUrlDuke || ""),
     env.SITE_CONFIG.put("TURNSTILE_ENABLED", turnstileConfig.enabled.toString()),
     env.SITE_CONFIG.put("TURNSTILE_SITE_KEY", turnstileConfig.siteKey),
     env.SITE_CONFIG.put("TURNSTILE_SECRET_KEY", turnstileConfig.secretKey)

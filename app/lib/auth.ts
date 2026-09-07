@@ -226,6 +226,12 @@ export const {
         })
 
         session.user.providers = userAccounts.map(account => account.provider)
+
+        // 注入角色过期时间（用于前端提醒）
+        const roleExpiresAt = userRoleRecords[0]?.role?.name !== 'civilian'
+          ? userRoleRecords[0]?.expiresAt ?? null
+          : null
+        session.user.roleExpiresAt = roleExpiresAt ? roleExpiresAt.toISOString() : null
       }
 
       return session

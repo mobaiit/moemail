@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server"
 import { createDb } from "@/lib/db"
-import { emails, messages } from "@/lib/schema"
+import { emails, messages, userRoles, roles } from "@/lib/schema"
 import { eq, and, lt, or, sql, ne, isNull } from "drizzle-orm"
 import { encodeCursor, decodeCursor } from "@/lib/cursor"
 import { getUserId } from "@/lib/apiKey"
 import { checkBasicSendPermission } from "@/lib/send-permissions"
+import { ROLES } from "@/lib/permissions"
 
 export const runtime = "edge"
 
@@ -20,7 +21,8 @@ export async function DELETE(
     const email = await db.query.emails.findFirst({
       where: and(
         eq(emails.id, id),
-        eq(emails.userId, userId!)
+        eq(emails.userId, userId!),
+        isNull(emails.deletedAt)
       )
     })
 
@@ -30,13 +32,30 @@ export async function DELETE(
         { status: 403 }
       )
     }
-    await db.delete(messages)
-      .where(eq(messages.emailId, id))
 
-    await db.delete(emails)
-      .where(eq(emails.id, id))
+    // 获取用户角色，判断是否需要冷却
+    const userRoleRecord = await db
+      .select({ roleName: roles.name })
+      .from(userRoles)
+      .innerJoin(roles, eq(userRoles.roleId, roles.id))
+      .where(eq(userRoles.userId, userId!))
+      .get()
 
-    return NextResponse.json({ success: true })
+    const roleName = userRoleRecord?.roleName ?? ROLES.CIVILIAN
+    const needCooldown = roleName === ROLES.CIVILIAN || roleName === ROLES.KNIGHT
+
+    if (needCooldown) {
+      // 软删除：标记 deleted_at，由 cleanup worker 24h 后物理删除
+      await db.update(emails)
+        .set({ deletedAt: new Date() })
+        .where(eq(emails.id, id))
+    } else {
+      // 皇帝/公爵：立即物理删除
+      await db.delete(messages).where(eq(messages.emailId, id))
+      await db.delete(emails).where(eq(emails.id, id))
+    }
+
+    return NextResponse.json({ success: true, softDeleted: needCooldown })
   } catch (error) {
     console.error('Failed to delete email:', error)
     return NextResponse.json(

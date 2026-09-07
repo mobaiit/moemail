@@ -141,6 +141,13 @@
       "when": 1788746390784,
       "tag": "0019_webhook_type",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1788763997393,
+      "tag": "0020_role_expiry_email_softdelete",
+      "breakpoints": true
     }
   ]
 }

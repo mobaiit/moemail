@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server"
 import { nanoid } from "nanoid"
 import { createDb } from "@/lib/db"
-import { emails } from "@/lib/schema"
-import { eq, and, gt, sql, count } from "drizzle-orm"
+import { emails, userRoles, roles } from "@/lib/schema"
+import { eq, and, gt, sql, count, isNull } from "drizzle-orm"
 import { EXPIRY_OPTIONS } from "@/types/email"
 import { EMAIL_CONFIG, RoleName } from "@/config"
 import { getRequestContext } from "@cloudflare/next-on-pages"
@@ -13,6 +13,7 @@ import { ROLES } from "@/lib/permissions"
 export const runtime = "edge"
 
 const PERMANENT_EXPIRES = new Date('9999-01-01T00:00:00.000Z')
+const COOLDOWN_MS = 24 * 60 * 60 * 1000
 
 export async function POST(request: Request) {
   const db = createDb()
@@ -25,8 +26,30 @@ export async function POST(request: Request) {
 
   const userRole = await getUserRole(userId) as RoleName
   const roleLimits = EMAIL_CONFIG.ROLE_LIMITS[userRole] ?? EMAIL_CONFIG.ROLE_LIMITS.civilian
+  const needCooldown = userRole === ROLES.CIVILIAN || userRole === ROLES.KNIGHT
 
   try {
+    // 冷却期校验（平民/骑士）
+    if (needCooldown) {
+      const lastDeleted = await db.query.emails.findFirst({
+        where: and(
+          eq(emails.userId, userId),
+          sql`${emails.deletedAt} IS NOT NULL`
+        ),
+        orderBy: (emails, { desc }) => [desc(emails.deletedAt)],
+      })
+
+      if (lastDeleted?.deletedAt) {
+        const elapsed = Date.now() - lastDeleted.deletedAt.getTime()
+        if (elapsed < COOLDOWN_MS) {
+          const remainingHours = Math.ceil((COOLDOWN_MS - elapsed) / (1000 * 60 * 60))
+          return NextResponse.json(
+            { error: `删除冷却中，还需等待 ${remainingHours} 小时后才能创建新邮箱`, cooldownRemaining: COOLDOWN_MS - elapsed },
+            { status: 403 }
+          )
+        }
+      }
+    }
     const { name, expiryTime, domain } = await request.json<{
       name: string
       expiryTime: number
@@ -54,7 +77,8 @@ export async function POST(request: Request) {
         .from(emails)
         .where(and(
           eq(emails.userId, userId),
-          gt(emails.expiresAt, new Date())
+          gt(emails.expiresAt, new Date()),
+          isNull(emails.deletedAt)
         ))
 
       if (Number(activeCount.count) >= roleLimits.maxEmails) {
@@ -72,7 +96,8 @@ export async function POST(request: Request) {
         .from(emails)
         .where(and(
           eq(emails.userId, userId),
-          eq(emails.expiresAt, PERMANENT_EXPIRES)
+          eq(emails.expiresAt, PERMANENT_EXPIRES),
+          isNull(emails.deletedAt)
         ))
 
       if (Number(permanentCount.count) >= roleLimits.maxPermanentEmails) {

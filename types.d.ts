@@ -23,6 +23,7 @@ declare module "next-auth" {
     roles?: { name: string }[]
     username?: string | null
     providers?: string[]
+    roleExpiresAt?: string | null
   }
 
   interface Session {
