@@ -11,8 +11,8 @@
       "CIVILIAN": "市民"
     },
     "roleExpiresAt": "有効期限"
+  },
   "apiKey": {
-    "title": "API Key 管理",
     "description": "OpenAPI にアクセスするための API キーを作成・管理します",
     "create": "API Key を作成",
     "name": "キー名",

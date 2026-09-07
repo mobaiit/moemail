@@ -11,8 +11,8 @@
       "CIVILIAN": "평민"
     },
     "roleExpiresAt": "만료"
+  },
   "apiKey": {
-    "title": "API Key 관리",
     "description": "OpenAPI 접근을 위한 API 키 생성 및 관리",
     "create": "API Key 생성",
     "name": "키 이름",

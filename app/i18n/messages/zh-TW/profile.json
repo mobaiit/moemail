@@ -11,8 +11,8 @@
       "CIVILIAN": "平民"
     },
     "roleExpiresAt": "到期"
+  },
   "apiKey": {
-    "title": "API Key 管理",
     "description": "建立與管理用於存取 OpenAPI 的 API 金鑰",
     "create": "建立 API Key",
     "name": "金鑰名稱",
